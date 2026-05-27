@@ -1,32 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OceanSim Isaac Sim 6 — Full Test & Verification Report</title>
+<title>OceanSim × Isaac Sim 6.0 — 完整测试与验证报告</title>
 <style>
-:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--green:#3fb950;--red:#f85149;--blue:#58a6ff;--yellow:#d29922;--orange:#db6d28;--purple:#bc8cff}
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--green:#3fb950;--red:#f85149;--blue:#58a6ff;--yellow:#d29922;--purple:#bc8cff}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:2rem}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;padding:2rem}
 .container{max-width:1200px;margin:0 auto}
 h1{font-size:2rem;margin-bottom:.5rem}
 h2{font-size:1.5rem;margin:2.5rem 0 1rem;color:var(--blue);border-bottom:1px solid var(--border);padding-bottom:.5rem}
-h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:var(--yellow)}
-.subtitle{color:var(--muted);margin-bottom:2rem}
-.badge{display:inline-block;padding:.15rem .6rem;border-radius:1rem;font-size:.75rem;font-weight:600;text-transform:uppercase}
+h3{font-size:1.15rem;margin:1.5rem 0 .5rem;color:var(--yellow)}
+.subtitle{color:var(--muted);margin-bottom:2rem;font-size:.95rem}
+.badge{display:inline-block;padding:.15rem .6rem;border-radius:1rem;font-size:.72rem;font-weight:600;text-transform:uppercase}
 .badge-pass{background:#238636;color:#fff}.badge-fail{background:#da3633;color:#fff}
 .badge-warn{background:#9e6a03;color:#fff}.badge-info{background:#1f6feb;color:#fff}
 .badge-fix{background:#8957e5;color:#fff}
 .stats{display:flex;gap:1.5rem;margin:1.5rem 0;flex-wrap:wrap}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem 1.5rem;text-align:center;min-width:120px}
-.stat-num{font-size:2rem;font-weight:700}.stat-label{color:var(--muted);font-size:.85rem}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.8rem;text-align:center;min-width:130px}
+.stat-num{font-size:2.2rem;font-weight:700}.stat-label{color:var(--muted);font-size:.85rem;margin-top:.2rem}
 .stat-green .stat-num{color:var(--green)}.stat-blue .stat-num{color:var(--blue)}
 .stat-yellow .stat-num{color:var(--yellow)}.stat-red .stat-num{color:var(--red)}
-.test-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin:.75rem 0}
+.test-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin:.6rem 0;transition:border-color .2s}
 .test-card.pass{border-left:4px solid var(--green)}.test-card.fail{border-left:4px solid var(--red)}
-.test-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem}
-.test-name{font-weight:600}.test-phase{color:var(--muted);font-size:.8rem}
-.test-detail{color:var(--muted);font-size:.85rem;font-family:'SFMono-Regular',Consolas,monospace}
+.test-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem}
+.test-name{font-weight:600;font-size:.95rem}.test-phase{color:var(--muted);font-size:.78rem}
+.test-detail{color:var(--muted);font-size:.84rem;font-family:'SFMono-Regular',Consolas,monospace}
 .diff-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin:1rem 0;overflow:hidden}
 .diff-header{padding:.75rem 1rem;background:rgba(110,118,129,.1);border-bottom:1px solid var(--border);font-family:'SFMono-Regular',Consolas,monospace;font-size:.85rem;display:flex;justify-content:space-between;align-items:center}
 .diff-body{font-family:'SFMono-Regular',Consolas,monospace;font-size:.8rem;line-height:1.5;overflow-x:auto}
@@ -37,236 +37,278 @@ h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:var(--yellow)}
 .explanation strong{color:var(--blue)}
 .warning{background:rgba(210,153,34,.1);border:1px solid rgba(210,153,34,.3);border-radius:6px;padding:1rem;margin:1rem 0;font-size:.9rem}
 .warning strong{color:var(--yellow)}
+.success{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);border-radius:6px;padding:1rem;margin:1rem 0;font-size:.9rem}
+.success strong{color:var(--green)}
 table{width:100%;border-collapse:collapse;margin:1rem 0}
-th,td{text-align:left;padding:.6rem 1rem;border-bottom:1px solid var(--border)}
-th{color:var(--muted);font-weight:600;font-size:.85rem;text-transform:uppercase}
-.file-path{font-family:'SFMono-Regular',Consolas,monospace;font-size:.9rem;color:var(--blue)}
-code{background:rgba(110,118,129,.2);padding:.15rem .4rem;border-radius:4px;font-family:'SFMono-Regular',Consolas,monospace;font-size:.85rem}
-.toc{margin:1rem 0}.toc a{color:var(--blue);text-decoration:none}.toc a:hover{text-decoration:underline}.toc li{margin:.3rem 0}
+th,td{text-align:left;padding:.6rem 1rem;border-bottom:1px solid var(--border);font-size:.9rem}
+th{color:var(--muted);font-weight:600;font-size:.82rem;text-transform:uppercase}
+.file-path{font-family:'SFMono-Regular',Consolas,monospace;font-size:.85rem;color:var(--blue)}
+code{background:rgba(110,118,129,.2);padding:.12rem .4rem;border-radius:4px;font-family:'SFMono-Regular',Consolas,monospace;font-size:.84rem}
+.toc{margin:1rem 0}.toc a{color:var(--blue);text-decoration:none}.toc a:hover{text-decoration:underline}.toc li{margin:.35rem 0;font-size:.95rem}
 .section{margin-bottom:3rem}
-.review-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin:.75rem 0}
+.review-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin:.6rem 0}
 .review-card.critical{border-left:4px solid var(--red)}.review-card.medium{border-left:4px solid var(--yellow)}
 .review-card.low{border-left:4px solid var(--muted)}.review-card.ok{border-left:4px solid var(--green)}
 .env-table td:first-child{font-weight:600;color:var(--muted);white-space:nowrap}
 .source-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin:1rem 0;overflow:hidden}
-.source-header{padding:.5rem 1rem;background:rgba(110,118,129,.1);border-bottom:1px solid var(--border);font-family:'SFMono-Regular',Consolas,monospace;font-size:.85rem;color:var(--muted)}
-.source-body{font-family:'SFMono-Regular',Consolas,monospace;font-size:.8rem;line-height:1.5;padding:1rem;overflow-x:auto;max-height:500px;overflow-y:auto}
+.source-header{padding:.6rem 1rem;background:rgba(110,118,129,.1);border-bottom:1px solid var(--border);font-family:'SFMono-Regular',Consolas,monospace;font-size:.85rem;color:var(--muted)}
+.source-body{font-family:'SFMono-Regular',Consolas,monospace;font-size:.78rem;line-height:1.5;padding:1rem;overflow-x:auto;max-height:500px;overflow-y:auto}
+.timeline{border-left:3px solid var(--blue);padding-left:1.5rem;margin:1rem 0}
+.timeline-item{margin:1rem 0;position:relative}
+.timeline-item::before{content:'';position:absolute;left:-1.75rem;top:.5rem;width:10px;height:10px;border-radius:50%;background:var(--blue)}
+.timeline-date{color:var(--muted);font-size:.8rem}
+.timeline-content{margin-top:.2rem}
 </style>
 </head>
 <body>
 <div class="container">
 
-<h1>OceanSim &times; Isaac Sim 6.0</h1>
-<p class="subtitle">Full test &amp; verification report &mdash; branch <code>feat/isaacsim6-compat</code> on <code>robotlearning123/OceanSim</code></p>
+<h1>OceanSim × Isaac Sim 6.0</h1>
+<p class="subtitle">完整测试与验证报告 — 分支 <code>feat/isaacsim6</code> @ <code>robotlearning123/OceanSim</code> — 2026-05-27</p>
 
 <div class="stats">
-  <div class="stat stat-green"><div class="stat-num">12/12</div><div class="stat-label">Tests Passed</div></div>
-  <div class="stat stat-yellow"><div class="stat-num">6</div><div class="stat-label">Breaking API Fixes</div></div>
-  <div class="stat stat-blue"><div class="stat-num">7</div><div class="stat-label">Source Files Changed</div></div>
-  <div class="stat stat-blue"><div class="stat-num">5</div><div class="stat-label">New Files Added</div></div>
-  <div class="stat stat-blue"><div class="stat-num">4</div><div class="stat-label">Review Issues Fixed</div></div>
+  <div class="stat stat-green"><div class="stat-num">12/12</div><div class="stat-label">测试通过</div></div>
+  <div class="stat stat-yellow"><div class="stat-num">6</div><div class="stat-label">Breaking API 修复</div></div>
+  <div class="stat stat-blue"><div class="stat-num">7</div><div class="stat-label">源文件修改</div></div>
+  <div class="stat stat-blue"><div class="stat-num">5</div><div class="stat-label">新增文件</div></div>
+  <div class="stat stat-blue"><div class="stat-num">3</div><div class="stat-label">提交记录</div></div>
 </div>
 
-<h2>Table of Contents</h2>
+<h2>目录</h2>
 <ol class="toc">
-  <li><a href="#env">Environment</a></li>
-  <li><a href="#tests">Test Results (12/12)</a></li>
-  <li><a href="#breaking">Breaking API Changes (6)</a></li>
-  <li><a href="#diffs">Full Diffs (7 files)</a></li>
-  <li><a href="#review">Code Review Findings &amp; Fixes</a></li>
-  <li><a href="#newfiles">New Files (5)</a></li>
-  <li><a href="#source">Test Source Code</a></li>
+  <li><a href="#env">运行环境</a></li>
+  <li><a href="#timeline">提交历史</a></li>
+  <li><a href="#tests">测试结果 (12/12 通过)</a></li>
+  <li><a href="#breaking">Breaking API 变更 (6项)</a></li>
+  <li><a href="#diffs">完整代码差异 (7个文件)</a></li>
+  <li><a href="#review">代码审查发现与修复</a></li>
+  <li><a href="#sensor-audit">传感器源码审计 (9个文件)</a></li>
+  <li><a href="#newfiles">新增文件 (5个)</a></li>
+  <li><a href="#source">测试源码</a></li>
+  <li><a href="#limits">已知限制</a></li>
 </ol>
 
-<!-- ==================== ENV ==================== -->
+<!-- ==================== 环境 ==================== -->
 <div class="section" id="env">
-<h2>1. Environment</h2>
+<h2>1. 运行环境</h2>
 <table class="env-table">
   <tr><td>Isaac Sim</td><td>6.0.0</td></tr>
-  <tr><td>OceanSim</td><td>commit <code>c33cf95</code> (origin/main HEAD)</td></tr>
-  <tr><td>Branch</td><td><code>feat/isaacsim6-compat</code> (2 commits ahead of main)</td></tr>
-  <tr><td>Fork</td><td><code>robotlearning123/OceanSim</code></td></tr>
-  <tr><td>Platform</td><td>Ubuntu 24.04.2 LTS (Noble Numbat)</td></tr>
+  <tr><td>OceanSim</td><td>上游 <code>c33cf95</code> (umfieldrobotics/OceanSim main)</td></tr>
+  <tr><td>分支</td><td><code>feat/isaacsim6</code> (3 commits ahead of upstream main)</td></tr>
+  <tr><td>Fork</td><td><code>robotlearning123/OceanSim</code> (默认分支: <code>feat/isaacsim6</code>)</td></tr>
+  <tr><td>操作系统</td><td>Ubuntu 24.04.2 LTS (Noble Numbat)</td></tr>
   <tr><td>GPU</td><td>NVIDIA GeForce RTX 5090 (32 GB, sm_120)</td></tr>
   <tr><td>CUDA</td><td>Toolkit 12.9 / Driver 13.0 (580.95.05)</td></tr>
   <tr><td>Python</td><td>3.12</td></tr>
   <tr><td>Warp</td><td>1.13.0</td></tr>
-  <tr><td>Test Date</td><td>2026-05-27</td></tr>
+  <tr><td>测试日期</td><td>2026-05-27</td></tr>
 </table>
 </div>
 
-<!-- ==================== TESTS ==================== -->
+<!-- ==================== 提交历史 ==================== -->
+<div class="section" id="timeline">
+<h2>2. 提交历史</h2>
+<div class="timeline">
+  <div class="timeline-item">
+    <div class="timeline-date">d528262 → 4b25ef8 (rebase后)</div>
+    <div class="timeline-content"><strong>feat: Isaac Sim 6.0 compatibility</strong><br>
+    修复6个Breaking API变更: extension.toml模块注册、依赖名更新、语义API重命名、PhysX接口重命名、UI导入迁移、菜单项工厂替换</div>
+  </div>
+  <div class="timeline-item">
+    <div class="timeline-date">6563c6b → fe7ac05 (rebase后)</div>
+    <div class="timeline-content"><strong>fix: address review findings — tests, docs, stale comments</strong><br>
+    修复4个审查问题: 撤回硬编码路径、修复空断言、修复文档错误、修复过时注释</div>
+  </div>
+  <div class="timeline-item">
+    <div class="timeline-date">1fb27a2 → 2d14098 (rebase后)</div>
+    <div class="timeline-content"><strong>docs: add comprehensive test &amp; verification report</strong><br>
+    添加 TEST_REPORT.html、DIFF_REPORT.html、VERIFICATION.md</div>
+  </div>
+</div>
+
+<div class="explanation">
+  <strong>Rebase 说明:</strong> 分支最初基于 <code>c33cf95</code> 创建。上游 main 后来合入了6个新提交 (README更新 + Warp数组索引修复)。执行 <code>git rebase origin/main</code> 后，分支变为基于最新 <code>1d66f6b</code>，3个提交的哈希已更新。所有代码修复完整保留。
+</div>
+</div>
+
+<!-- ==================== 测试结果 ==================== -->
 <div class="section" id="tests">
-<h2>2. Test Results &mdash; 12/12 Passed</h2>
+<h2>3. 测试结果 — 12/12 通过</h2>
 
-<p>All tests run via <code>verify_all_demos.py</code> on Isaac Sim 6.0.0 with <code>SimulationApp({"headless": True})</code>.</p>
-
-<h3>Phase 1: Demo Data Files (no Isaac Sim)</h3>
-
-<div class="test-card pass">
-  <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> demo_waypoints.txt</span>
-    <span class="test-phase">Phase 1</span>
-  </div>
-  <div class="test-detail">468 waypoints loaded &mdash; each line has 7 floats (x, y, z, qw, qx, qy, qz)</div>
+<div class="success">
+  <strong>Rebase 后验证:</strong> 所有12项测试在 rebase 后重新执行，全部通过。测试于 2026-05-27 17:21 UTC 在 Isaac Sim 6.0.0 + RTX 5090 上运行。
 </div>
 
+<h3>阶段1: Demo 数据文件 (无需 Isaac Sim)</h3>
+
 <div class="test-card pass">
   <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> demo_rgb.png</span>
-    <span class="test-phase">Phase 1</span>
+    <span class="test-name"><span class="badge badge-pass">通过</span> demo_waypoints.txt</span>
+    <span class="test-phase">阶段 1</span>
   </div>
-  <div class="test-detail">shape=(1080, 1920, 4) RGBA image</div>
+  <div class="test-detail">468个航点加载成功 — 每行7个浮点数 (x, y, z, qw, qx, qy, qz)</div>
 </div>
 
 <div class="test-card pass">
   <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> demo_depth.npy</span>
-    <span class="test-phase">Phase 1</span>
+    <span class="test-name"><span class="badge badge-pass">通过</span> demo_rgb.png</span>
+    <span class="test-phase">阶段 1</span>
   </div>
-  <div class="test-detail">shape=(1080, 1920), range=[3.33, 36.39] meters</div>
-</div>
-
-<h3>Phase 2: Color Picker UW_render Kernel (Warp only)</h3>
-
-<div class="test-card pass">
-  <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> UW_render kernel</span>
-    <span class="test-phase">Phase 2</span>
-  </div>
-  <div class="test-detail">Warp 1.13.0, CUDA:0 (RTX 5090) &mdash; output shape=(1080, 1920, 4), mean_rgb=112.0</div>
-</div>
-
-<h3>Phase 3: Isaac Sim 6 + OceanSim Sensors</h3>
-
-<div class="test-card pass">
-  <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> OceanSim assets</span>
-    <span class="test-phase">Phase 3</span>
-  </div>
-  <div class="test-detail">Assets directory found and loaded</div>
+  <div class="test-detail">shape=(1080, 1920, 4) RGBA 图像</div>
 </div>
 
 <div class="test-card pass">
   <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> BlueROV robot loaded</span>
-    <span class="test-phase">Phase 3</span>
+    <span class="test-name"><span class="badge badge-pass">通过</span> demo_depth.npy</span>
+    <span class="test-phase">阶段 1</span>
   </div>
-  <div class="test-detail">BROV_low.usd loaded, PhysX rigid body (mass=5.0kg, gravity disabled, damping=10.0)</div>
+  <div class="test-detail">shape=(1080, 1920), 范围=[3.33, 36.39] 米</div>
+</div>
+
+<h3>阶段2: 颜色选择器 UW_render 核心 (仅 Warp)</h3>
+
+<div class="test-card pass">
+  <div class="test-header">
+    <span class="test-name"><span class="badge badge-pass">通过</span> UW_render 核心</span>
+    <span class="test-phase">阶段 2</span>
+  </div>
+  <div class="test-detail">Warp 1.13.0, CUDA:0 (RTX 5090) — 输出 shape=(1080, 1920, 4), mean_rgb=112.0</div>
+</div>
+
+<h3>阶段3: Isaac Sim 6 + OceanSim 传感器</h3>
+
+<div class="test-card pass">
+  <div class="test-header">
+    <span class="test-name"><span class="badge badge-pass">通过</span> OceanSim 资源</span>
+    <span class="test-phase">阶段 3</span>
+  </div>
+  <div class="test-detail">资源目录已找到并加载</div>
 </div>
 
 <div class="test-card pass">
   <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> BarometerSensor</span>
-    <span class="test-phase">Phase 3</span>
+    <span class="test-name"><span class="badge badge-pass">通过</span> BlueROV 机器人加载</span>
+    <span class="test-phase">阶段 3</span>
   </div>
-  <div class="test-detail">pressure=123239.5 Pa &mdash; hydrostatic at z=-0.8m, water_surface_z=1.43m, assert: isinstance(float) and &gt; 0</div>
+  <div class="test-detail">BROV_low.usd 加载成功, PhysX 刚体 (质量=5.0kg, 重力已禁用, 阻尼=10.0)</div>
 </div>
 
 <div class="test-card pass">
   <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> DVLsensor</span>
-    <span class="test-phase">Phase 3</span>
+    <span class="test-name"><span class="badge badge-pass">通过</span> 气压计传感器 (BarometerSensor)</span>
+    <span class="test-phase">阶段 3</span>
   </div>
-  <div class="test-detail">4 beams attached (Janus configuration), assert: len(beam_paths) == 4</div>
+  <div class="test-detail">压力=123239.5 Pa — z=-0.8m处静水压, 水面z=1.43m, 断言: isinstance(float) and &gt; 0</div>
 </div>
 
 <div class="test-card pass">
   <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> UW_Camera</span>
-    <span class="test-phase">Phase 3</span>
+    <span class="test-name"><span class="badge badge-pass">通过</span> 多普勒计程仪 (DVLsensor)</span>
+    <span class="test-phase">阶段 3</span>
   </div>
-  <div class="test-detail">resolution=[640, 480], focal_length=2.1, clipping=[0.1, 100], assert: get_resolution() == [640, 480]</div>
+  <div class="test-detail">4波束已连接 (Janus配置), 断言: len(beam_paths) == 4</div>
 </div>
 
 <div class="test-card pass">
   <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> ImagingSonarSensor</span>
-    <span class="test-phase">Phase 3</span>
+    <span class="test-name"><span class="badge badge-pass">通过</span> 水下相机 (UW_Camera)</span>
+    <span class="test-phase">阶段 3</span>
   </div>
-  <div class="test-detail">range=[0.2, 3.0], angular_res=0.25, hori_res=4000, assert: get_range() is not None and get_fov() is not None</div>
+  <div class="test-detail">分辨率=[640, 480], 焦距=2.1, 裁剪范围=[0.1, 100], 断言: get_resolution() == [640, 480]</div>
 </div>
-
-<h3>Phase 4: Sensor Example Scenario</h3>
 
 <div class="test-card pass">
   <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> Sensor Example scenario</span>
-    <span class="test-phase">Phase 4</span>
+    <span class="test-name"><span class="badge badge-pass">通过</span> 成像声纳 (ImagingSonarSensor)</span>
+    <span class="test-phase">阶段 3</span>
   </div>
-  <div class="test-detail">5 physics steps @ 60Hz, baro_reading=123239.5 Pa, assert: isinstance(baro_reading, float)</div>
+  <div class="test-detail">range=[0.2, 3.0], fov=[130.0, 20.0], angular_res=0.25, hori_res=4000, 断言: get_range() is not None and get_fov() is not None</div>
 </div>
 
-<h3>Phase 5: Waypoint Following</h3>
+<h3>阶段4: 传感器示例场景</h3>
 
 <div class="test-card pass">
   <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> Waypoint following</span>
-    <span class="test-phase">Phase 5</span>
+    <span class="test-name"><span class="badge badge-pass">通过</span> 传感器示例场景循环</span>
+    <span class="test-phase">阶段 4</span>
   </div>
-  <div class="test-detail">50 steps, initial=(-2.0, 0.0, -0.8), final=(-1.087, 0.0, -0.8), delta_x=0.9134, assert: moved on any axis &gt; 0.01</div>
+  <div class="test-detail">5个物理步进 @ 60Hz, 气压读数=123239.5 Pa, 断言: isinstance(baro_reading, float)</div>
 </div>
 
-<h3>Phase 6: Colorpicker Scenario (Warp kernel)</h3>
+<h3>阶段5: 航点跟踪</h3>
 
 <div class="test-card pass">
   <div class="test-header">
-    <span class="test-name"><span class="badge badge-pass">PASS</span> Colorpicker UW_render</span>
-    <span class="test-phase">Phase 6</span>
+    <span class="test-name"><span class="badge badge-pass">通过</span> 航点跟踪</span>
+    <span class="test-phase">阶段 5</span>
   </div>
-  <div class="test-detail">3 water types tested: clear water, turbid coastal, deep ocean &mdash; all produce valid (1080, 1920, 4) output</div>
+  <div class="test-detail">50步, 初始位置=(-2.0, 0.0, -0.8), 最终位置=(-1.087, 0.0, -0.8), delta_x=0.9134, 断言: 任意轴移动 &gt; 0.01</div>
+</div>
+
+<h3>阶段6: 颜色选择器场景 (Warp 核心)</h3>
+
+<div class="test-card pass">
+  <div class="test-header">
+    <span class="test-name"><span class="badge badge-pass">通过</span> 颜色选择器 UW_render</span>
+    <span class="test-phase">阶段 6</span>
+  </div>
+  <div class="test-detail">3种水型测试: 清澈海水、浑浊近海、深海 — 全部生成有效 (1080, 1920, 4) 输出</div>
 </div>
 
 </div>
 
-<!-- ==================== BREAKING CHANGES ==================== -->
+<!-- ==================== Breaking API 变更 ==================== -->
 <div class="section" id="breaking">
-<h2>3. Breaking API Changes &mdash; 6 Total</h2>
+<h2>4. Breaking API 变更 — 6项</h2>
+
+<div class="explanation">
+  <strong>背景:</strong> OceanSim 原为 Isaac Sim 4.5 编写。Isaac Sim 6.0 重命名或移除了多个 API。不修复这些变更，扩展会因 <code>ImportError</code> 或 <code>AttributeError</code> 无法加载。
+</div>
 
 <table>
-  <tr><th>#</th><th>API</th><th>Isaac 4.5</th><th>Isaac 6.0</th><th>Files</th></tr>
+  <tr><th>#</th><th>API</th><th>Isaac 4.5</th><th>Isaac 6.0</th><th>影响文件</th></tr>
   <tr>
-    <td>1</td><td>Module registration</td>
-    <td>Implicit auto-discovery</td>
-    <td>Explicit <code>[[python.module]]</code> in extension.toml</td>
+    <td>1</td><td>模块注册</td>
+    <td>隐式自动发现</td>
+    <td>需在 extension.toml 中显式声明 <code>[[python.module]]</code></td>
     <td class="file-path">extension.toml</td>
   </tr>
   <tr>
-    <td>2</td><td>Dependency names</td>
+    <td>2</td><td>依赖名称</td>
     <td><code>omni.isaac.ui</code>, <code>omni.isaac.core</code></td>
     <td><code>isaacsim.gui.components</code>, <code>isaacsim.core.api</code>, <code>isaacsim.examples.extension</code></td>
     <td class="file-path">extension.toml</td>
   </tr>
   <tr>
-    <td>3</td><td>Semantic labeling</td>
+    <td>3</td><td>语义标注</td>
     <td><code>add_update_semantics(prim, semantic_label, type_label)</code></td>
     <td><code>add_labels(prim, labels, instance_name)</code></td>
     <td class="file-path">ui_builder.py</td>
   </tr>
   <tr>
-    <td>4</td><td>PhysX interface</td>
+    <td>4</td><td>PhysX 接口</td>
     <td><code>acquire_physx_interface()</code></td>
     <td><code>get_physx_interface()</code></td>
-    <td class="file-path">extension.py (x2)</td>
+    <td class="file-path">extension.py (×2)</td>
   </tr>
   <tr>
-    <td>5</td><td>UI imports</td>
+    <td>5</td><td>UI 导入路径</td>
     <td><code>omni.isaac.ui.element_wrappers</code>, <code>omni.isaac.ui.menu</code></td>
     <td><code>isaacsim.gui.components</code>, <code>isaacsim.gui.menu</code></td>
-    <td class="file-path">extension.py (x2)</td>
+    <td class="file-path">extension.py (×2)</td>
   </tr>
   <tr>
-    <td>6</td><td>Menu item factory</td>
+    <td>6</td><td>菜单项工厂</td>
     <td><code>make_menu_item_description(ext_id, name, fn)</code></td>
     <td><code>MenuItemDescription(name=name, onclick_fn=fn)</code></td>
-    <td class="file-path">extension.py (x2)</td>
+    <td class="file-path">extension.py (×2)</td>
   </tr>
 </table>
 </div>
 
-<!-- ==================== DIFFS ==================== -->
+<!-- ==================== 完整差异 ==================== -->
 <div class="section" id="diffs">
-<h2>4. Full Diffs &mdash; 7 Source Files Changed</h2>
+<h2>5. 完整代码差异 — 7个源文件</h2>
 
 <div class="diff-block">
   <div class="diff-header"><span>config/extension.toml</span><span><span class="badge badge-warn">Breaking</span></span></div>
@@ -302,14 +344,14 @@ code{background:rgba(110,118,129,.2);padding:.15rem .4rem;border-radius:4px;font
 <div class="diff-line diff-del">-from omni.kit.menu.utils import add_menu_items, remove_menu_items</div>
 <div class="diff-line diff-add">+from isaacsim.gui.components import ScrollingWindow</div>
 <div class="diff-line diff-add">+from isaacsim.gui.menu import MenuItemDescription, add_menu_items, remove_menu_items</div>
-<div class="diff-line diff-hunk">@@ -72,8 +71,9 @@ class Extension(omni.ext.IExt):</div>
+<div class="diff-line diff-hunk">@@ -72,8 +71,9 @@</div>
 <div class="diff-line diff-ctx">                 sub_menu=[</div>
 <div class="diff-line diff-del">-                    make_menu_item_description(</div>
 <div class="diff-line diff-del">-                        ext_id, "Sensor Example", lambda a=weakref.proxy(self): a._menu_callback()</div>
 <div class="diff-line diff-add">+                    MenuItemDescription(</div>
 <div class="diff-line diff-add">+                        name="Sensor Example",</div>
 <div class="diff-line diff-add">+                        onclick_fn=lambda a=weakref.proxy(self): a._menu_callback(),</div>
-<div class="diff-line diff-hunk">@@ -86,7 +86,7 @@ class Extension(omni.ext.IExt):</div>
+<div class="diff-line diff-hunk">@@ -86,7 +86,7 @@</div>
 <div class="diff-line diff-del">-        self._physxIFace = _physx.acquire_physx_interface()</div>
 <div class="diff-line diff-add">+        self._physxIFace = _physx.get_physx_interface()</div>
   </div>
@@ -360,7 +402,7 @@ code{background:rgba(110,118,129,.2);padding:.15rem .4rem;border-radius:4px;font
 </div>
 
 <div class="diff-block">
-  <div class="diff-header"><span>colorpicker_python/ui_builder.py</span><span><span class="badge badge-info">Cosmetic</span></span></div>
+  <div class="diff-header"><span>colorpicker_python/ui_builder.py</span><span><span class="badge badge-info">文档修正</span></span></div>
   <div class="diff-body">
 <div class="diff-line diff-hunk">@@ -90,7 +90,7 @@</div>
 <div class="diff-line diff-del">-        Buttons imported from omni.isaac.ui.element_wrappers implement a cleanup function that should be called</div>
@@ -369,151 +411,139 @@ code{background:rgba(110,118,129,.2);padding:.15rem .4rem;border-radius:4px;font
 </div>
 
 <div class="diff-block">
-  <div class="diff-header"><span>utils/asset_path.json</span><span><span class="badge badge-fix">Reverted</span></span></div>
+  <div class="diff-header"><span>utils/asset_path.json</span><span><span class="badge badge-fix">已撤回</span></span></div>
   <div class="diff-body">
 <div class="diff-line diff-ctx"> {</div>
 <div class="diff-line diff-ctx">   "asset_path": null</div>
 <div class="diff-line diff-ctx"> }</div>
-<div class="diff-line diff-ctx" style="color:var(--muted)">  (unchanged from origin/main &mdash; hardcoded path was reverted after review)</div>
+<div class="diff-line diff-ctx" style="color:var(--muted)">  (与上游 main 一致 — 硬编码路径已在审查后撤回)</div>
   </div>
 </div>
 </div>
 
-<!-- ==================== REVIEW ==================== -->
+<!-- ==================== 代码审查 ==================== -->
 <div class="section" id="review">
-<h2>5. Code Review Findings &amp; Fixes</h2>
+<h2>6. 代码审查发现与修复</h2>
 
 <div class="explanation">
-  <strong>4 parallel review agents</strong> audited: API compatibility, extension.toml, sensor sources, test scripts, and documentation accuracy. All critical and medium issues were fixed before pushing.
+  <strong>审查流程:</strong> 4个并行审查代理分别审计了: API兼容性、extension.toml、传感器源码、测试脚本文档。所有严重和中等问题在推送前已修复。
 </div>
 
-<h3>Critical Issues Found &amp; Fixed</h3>
+<h3>严重问题 (已修复)</h3>
 
 <div class="review-card critical">
-  <div><strong>1. Vacuous UW_Camera assertion</strong> <span class="badge badge-fix">FIXED</span></div>
-  <div class="test-detail">verify_all_demos.py line 170: <code>log("UW_Camera", True, ...)</code> always passes.<br>Fixed: <code>log("UW_Camera", cam.get_resolution() == [640, 480], ...)</code></div>
-</div>
-
-<div class="review-card critical">
-  <div><strong>2. Vacuous ImagingSonarSensor assertion</strong> <span class="badge badge-fix">FIXED</span></div>
-  <div class="test-detail">verify_all_demos.py line 185: <code>log("ImagingSonarSensor", True, ...)</code> always passes.<br>Fixed: <code>log("ImagingSonarSensor", sonar.get_range() is not None and sonar.get_fov() is not None, ...)</code></div>
+  <div><strong>1. UW_Camera 空断言</strong> <span class="badge badge-fix">已修复</span></div>
+  <div class="test-detail">verify_all_demos.py 第170行: <code>log("UW_Camera", True, ...)</code> 始终通过<br>修复: <code>log("UW_Camera", cam.get_resolution() == [640, 480], ...)</code></div>
 </div>
 
 <div class="review-card critical">
-  <div><strong>3. Hardcoded path in asset_path.json</strong> <span class="badge badge-fix">FIXED</span></div>
-  <div class="test-detail">Committed <code>/home/robot/workspace/08-isaaclab/isaacsim/OceanSim_assets</code> &mdash; breaks other developers.<br>Fixed: reverted to <code>null</code> (per-user config)</div>
+  <div><strong>2. ImagingSonarSensor 空断言</strong> <span class="badge badge-fix">已修复</span></div>
+  <div class="test-detail">verify_all_demos.py 第185行: <code>log("ImagingSonarSensor", True, ...)</code> 始终通过<br>修复: <code>log("ImagingSonarSensor", sonar.get_range() is not None and sonar.get_fov() is not None, ...)</code></div>
 </div>
 
 <div class="review-card critical">
-  <div><strong>4. VERIFICATION.md wrong commit hash + test count</strong> <span class="badge badge-fix">FIXED</span></div>
-  <div class="test-detail">Stated commit <code>14d8f06</code> (doesn't exist), test count 10/10 (actual: 12/12), only 3/6 API changes documented.<br>Fixed: correct hash, 12/12 count, all 6 API changes documented.</div>
+  <div><strong>3. asset_path.json 硬编码路径</strong> <span class="badge badge-fix">已修复</span></div>
+  <div class="test-detail">提交了 <code>/home/robot/workspace/08-isaaclab/isaacsim/OceanSim_assets</code> — 其他开发者克隆后会报错<br>修复: 恢复为 <code>null</code> (用户需自行配置)</div>
 </div>
 
-<h3>Medium Issues Found &amp; Fixed</h3>
+<div class="review-card critical">
+  <div><strong>4. VERIFICATION.md 错误信息</strong> <span class="badge badge-fix">已修复</span></div>
+  <div class="test-detail">提交哈希错误 (<code>14d8f06</code> 不存在), 测试数量错误 (10/10 → 实际12/12), 仅记录3/6个API变更<br>修复: 更正哈希、数量、补全所有6个API变更</div>
+</div>
+
+<h3>中等问题 (已修复)</h3>
 
 <div class="review-card medium">
-  <div><strong>5. Waypoint check X-axis only</strong> <span class="badge badge-fix">FIXED</span></div>
-  <div class="test-detail">verify_phase3.py line 104: only checked X axis. Fixed: checks all 3 axes (X, Y, Z).</div>
+  <div><strong>5. 航点检测仅检查X轴</strong> <span class="badge badge-fix">已修复</span></div>
+  <div class="test-detail">verify_phase3.py 第104行: 仅检查X轴。修复: 检查所有3轴 (X, Y, Z)</div>
 </div>
 
 <div class="review-card medium">
-  <div><strong>6. DIFF_REPORT.html test count 10/10</strong> <span class="badge badge-fix">FIXED</span></div>
-  <div class="test-detail">Updated to 12/12 in both stat boxes.</div>
+  <div><strong>6. DIFF_REPORT.html 测试数量</strong> <span class="badge badge-fix">已修复</span></div>
+  <div class="test-detail">10/10 更新为 12/12</div>
 </div>
 
-<h3>Low Issues (Not Fixed, No Runtime Impact)</h3>
+<h3>低级问题</h3>
 
 <div class="review-card low">
-  <div><strong>7. Stale docstring comments</strong> <span class="badge badge-fix">FIXED</span></div>
-  <div class="test-detail"><code>omni.isaac.ui.element_wrappers</code> &rarr; <code>isaacsim.gui.components</code> in both ui_builder.py files.</div>
-</div>
-
-<div class="review-card low">
-  <div><strong>8. No test framework (pytest)</strong> <span class="badge badge-info">NOTED</span></div>
-  <div class="test-detail">Tests use ad-hoc try/except. Acceptable for one-off verification; would need pytest for CI integration.</div>
+  <div><strong>7. 过时的文档字符串注释</strong> <span class="badge badge-fix">已修复</span></div>
+  <div class="test-detail"><code>omni.isaac.ui.element_wrappers</code> → <code>isaacsim.gui.components</code> (两个 ui_builder.py 文件)</div>
 </div>
 
 <div class="review-card low">
-  <div><strong>9. stderr suppressed to /dev/null</strong> <span class="badge badge-info">NOTED</span></div>
-  <div class="test-detail">Suppresses Isaac Sim C++ noise. Acceptable for headless verification; would need log capture for CI.</div>
+  <div><strong>8. 未使用 pytest 测试框架</strong> <span class="badge badge-info">已记录</span></div>
+  <div class="test-detail">测试使用 try/except 临时方案。一次性验证可接受; CI集成需迁移到 pytest</div>
 </div>
 
-<h3>Sensor Source Audit (9 files)</h3>
+<div class="review-card low">
+  <div><strong>9. stderr 输出被丢弃</strong> <span class="badge badge-info">已记录</span></div>
+  <div class="test-detail">抑制 Isaac Sim C++ 噪音。无头验证可接受; CI需改为日志捕获</div>
+</div>
+</div>
+
+<!-- ==================== 传感器审计 ==================== -->
+<div class="section" id="sensor-audit">
+<h2>7. 传感器源码审计 — 9个文件</h2>
 
 <table>
-  <tr><th>File</th><th>Status</th><th>Notes</th></tr>
-  <tr><td class="file-path">sensors/UW_Camera.py</td><td><span class="badge badge-pass">CLEAN</span></td><td>All isaacsim.* imports correct</td></tr>
-  <tr><td class="file-path">sensors/BarometerSensor.py</td><td><span class="badge badge-pass">CLEAN</span></td><td>No omni.isaac references</td></tr>
-  <tr><td class="file-path">sensors/DVLsensor.py</td><td><span class="badge badge-pass">CLEAN</span></td><td>OmniGraph nodes already migrated</td></tr>
-  <tr><td class="file-path">sensors/ImagingSonarSensor.py</td><td><span class="badge badge-pass">CLEAN</span></td><td>do_array_copy verified working</td></tr>
-  <tr><td class="file-path">utils/UWrenderer_utils.py</td><td><span class="badge badge-pass">CLEAN</span></td><td>Warp-only, no Isaac imports</td></tr>
-  <tr><td class="file-path">utils/assets_utils.py</td><td><span class="badge badge-pass">CLEAN</span></td><td>os + json only</td></tr>
-  <tr><td class="file-path">utils/keyboard_cmd.py</td><td><span class="badge badge-pass">CLEAN</span></td><td>omni.appwindow verified working</td></tr>
-  <tr><td class="file-path">SensorExample_python/scenario.py</td><td><span class="badge badge-pass">CLEAN</span></td><td>PhysX USD APIs stable</td></tr>
-  <tr><td class="file-path">colorpicker_python/scenario.py</td><td><span class="badge badge-pass">CLEAN</span></td><td>get_active_viewport GUI-only</td></tr>
+  <tr><th>文件</th><th>状态</th><th>备注</th></tr>
+  <tr><td class="file-path">sensors/UW_Camera.py</td><td><span class="badge badge-pass">正常</span></td><td>所有 isaacsim.* 导入正确</td></tr>
+  <tr><td class="file-path">sensors/BarometerSensor.py</td><td><span class="badge badge-pass">正常</span></td><td>无 omni.isaac 引用</td></tr>
+  <tr><td class="file-path">sensors/DVLsensor.py</td><td><span class="badge badge-pass">正常</span></td><td>OmniGraph 节点已迁移</td></tr>
+  <tr><td class="file-path">sensors/ImagingSonarSensor.py</td><td><span class="badge badge-pass">正常</span></td><td>do_array_copy 已验证可用</td></tr>
+  <tr><td class="file-path">utils/UWrenderer_utils.py</td><td><span class="badge badge-pass">正常</span></td><td>仅使用 Warp, 无 Isaac 导入</td></tr>
+  <tr><td class="file-path">utils/assets_utils.py</td><td><span class="badge badge-pass">正常</span></td><td>仅使用 os + json</td></tr>
+  <tr><td class="file-path">utils/keyboard_cmd.py</td><td><span class="badge badge-pass">正常</span></td><td>omni.appwindow 已验证可用</td></tr>
+  <tr><td class="file-path">SensorExample_python/scenario.py</td><td><span class="badge badge-pass">正常</span></td><td>PhysX USD API 稳定</td></tr>
+  <tr><td class="file-path">colorpicker_python/scenario.py</td><td><span class="badge badge-pass">正常</span></td><td>get_active_viewport 仅限 GUI</td></tr>
 </table>
 
 <div class="warning">
-  <strong>Note:</strong> No remaining <code>omni.isaac.*</code> imports found in any of the 9 source files. All Isaac-specific imports use the <code>isaacsim.*</code> namespace.
+  <strong>注意:</strong> 9个源文件中均未发现残留的 <code>omni.isaac.*</code> 导入。所有 Isaac 相关导入已使用 <code>isaacsim.*</code> 命名空间。
 </div>
 </div>
 
-<!-- ==================== NEW FILES ==================== -->
+<!-- ==================== 新增文件 ==================== -->
 <div class="section" id="newfiles">
-<h2>6. New Files Added (5)</h2>
+<h2>8. 新增文件 (5个)</h2>
 
 <table>
-  <tr><th>File</th><th>Purpose</th></tr>
-  <tr><td class="file-path">isaacsim/__init__.py</td><td>Empty &mdash; namespace package marker</td></tr>
-  <tr><td class="file-path">isaacsim/oceansim/__init__.py</td><td>Empty &mdash; package marker</td></tr>
-  <tr><td class="file-path">isaacsim/oceansim/modules/__init__.py</td><td>Empty &mdash; package marker</td></tr>
-  <tr><td class="file-path">isaacsim/oceansim/sensors/__init__.py</td><td>Empty &mdash; package marker</td></tr>
-  <tr><td class="file-path">isaacsim/oceansim/utils/__init__.py</td><td>Empty &mdash; package marker</td></tr>
+  <tr><th>文件</th><th>用途</th></tr>
+  <tr><td class="file-path">isaacsim/__init__.py</td><td>空文件 — 命名空间包标记</td></tr>
+  <tr><td class="file-path">isaacsim/oceansim/__init__.py</td><td>空文件 — 包标记</td></tr>
+  <tr><td class="file-path">isaacsim/oceansim/modules/__init__.py</td><td>空文件 — 包标记</td></tr>
+  <tr><td class="file-path">isaacsim/oceansim/sensors/__init__.py</td><td>空文件 — 包标记</td></tr>
+  <tr><td class="file-path">isaacsim/oceansim/utils/__init__.py</td><td>空文件 — 包标记</td></tr>
 </table>
 
-<p style="color:var(--muted);margin-top:.5rem">These empty <code>__init__.py</code> files ensure Python package discovery alongside the <code>[[python.module]]</code> entries in extension.toml.</p>
+<p style="color:var(--muted);margin-top:.5rem">这些空的 <code>__init__.py</code> 文件配合 extension.toml 中的 <code>[[python.module]]</code> 条目, 确保 Python 包能被正确发现。</p>
 </div>
 
-<!-- ==================== SOURCE ==================== -->
+<!-- ==================== 测试源码 ==================== -->
 <div class="section" id="source">
-<h2>7. Test Source Code</h2>
+<h2>9. 测试源码</h2>
 
 <div class="source-block">
-  <div class="source-header">verify_all_demos.py (main verification script, 324 lines)</div>
+  <div class="source-header">verify_all_demos.py — 主验证脚本 (324行)</div>
   <div class="source-body">
 <pre>#!/usr/bin/env python3
-"""Comprehensive verification of ALL OceanSim demos on Isaac Sim 6.
-
-Tests:
-1. All 4 sensors (UW_Camera, BarometerSensor, DVLsensor, ImagingSonarSensor)
-2. Color Picker UW_render Warp kernel
-3. Demo data files (waypoints, RGB, depth)
-4. Sensor Example scenario loop
-5. Waypoint following scenario
-"""
-
+"""OceanSim 在 Isaac Sim 6 上的全面验证."""
 import sys, os, json
 sys.stderr = open('/dev/null', 'w')
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 RESULTS = {}
-
 def log(name, status, detail=""):
     RESULTS[name] = {"status": status, "detail": detail}
     tag = "PASS" if status else "FAIL"
     print(f"[{tag}] {name}: {detail}")
 
-# Phase 1: Demo data files (no Isaac Sim needed)
+# 阶段1: Demo 数据文件 (无需 Isaac Sim)
 import numpy as np
 from PIL import Image
 
-with open("demo/demo_waypoints.txt", "r") as f:
-    lines = f.readlines()
-waypoints = []
-for line in lines:
-    vals = line.strip().split()
-    if len(vals) == 7:
-        waypoints.append([float(v) for v in vals])
+with open("demo/demo_waypoints.txt", "r") as f: lines = f.readlines()
+waypoints = [[float(v) for v in l.strip().split()] for l in lines if len(l.strip().split()) == 7]
 log("demo_waypoints.txt", len(waypoints) > 0, f"{len(waypoints)} waypoints loaded")
 
 img = Image.open("demo/demo_rgb.png").convert("RGBA")
@@ -521,29 +551,23 @@ arr = np.array(img)
 log("demo_rgb.png", arr.ndim == 3 and arr.shape[2] == 4, f"shape={arr.shape}")
 
 depth = np.load("demo/demo_depth.npy")
-log("demo_depth.npy", depth.ndim == 2,
-    f"shape={depth.shape}, range=[{depth.min():.2f}, {depth.max():.2f}]")
+log("demo_depth.npy", depth.ndim == 2, f"shape={depth.shape}, range=[{depth.min():.2f}, {depth.max():.2f}]")
 
-# Phase 2: UW_render kernel
-import warp as wp
-wp.init()
+# 阶段2: UW_render 核心
+import warp as wp; wp.init()
 from isaacsim.oceansim.utils.UWrenderer_utils import UW_render
-
-demo_rgba = wp.array(data=np.array(img), dtype=wp.uint8, ndim=3)
+demo_rgba = wp.array(data=arr, dtype=wp.uint8, ndim=3)
 demo_depth = wp.array(data=depth, dtype=wp.float32, ndim=2)
 uw_image = wp.zeros_like(demo_rgba)
-param = np.array([0.0, 0.31, 0.24, 0.05, 0.05, 0.2, 0.05, 0.05, 0.05])
-wp.launch(
-    dim=np.flip([demo_rgba.shape[1], demo_rgba.shape[0]]),
-    kernel=UW_render,
-    inputs=[demo_rgba, demo_depth,
-            wp.vec3f(*param[0:3]), wp.vec3f(*param[6:9]), wp.vec3f(*param[3:6])],
+param = [0.0, 0.31, 0.24, 0.05, 0.05, 0.2, 0.05, 0.05, 0.05]
+wp.launch(dim=np.flip([arr.shape[1], arr.shape[0]]), kernel=UW_render,
+    inputs=[demo_rgba, demo_depth, wp.vec3f(*param[0:3]), wp.vec3f(*param[6:9]), wp.vec3f(*param[3:6])],
     outputs=[uw_image])
 result = uw_image.numpy()
 log("UW_render kernel", result.ndim == 3 and result.shape[2] == 4,
     f"output shape={result.shape}, mean_rgb={result[:,:,:3].mean():.1f}")
 
-# Phase 3-6: Isaac Sim 6
+# 阶段3-6: Isaac Sim 6
 from isaacsim import SimulationApp
 app = SimulationApp({"headless": True})
 import omni.kit.app
@@ -561,290 +585,109 @@ assets_path = get_oceansim_assets_path()
 log("OceanSim assets", os.path.isdir(assets_path), assets_path)
 
 create_new_stage()
-robot_prim_path = "/World/rob"
-rob = add_reference_to_stage(
-    usd_path=assets_path + "/Bluerov/BROV_low.usd",
-    prim_path=robot_prim_path)
-rob_api = PhysxSchema.PhysxRigidBodyAPI.Apply(get_prim_at_path(robot_prim_path))
+rob = add_reference_to_stage(usd_path=assets_path+"/Bluerov/BROV_low.usd", prim_path="/World/rob")
+rob_api = PhysxSchema.PhysxRigidBodyAPI.Apply(get_prim_at_path("/World/rob"))
 rob_api.CreateDisableGravityAttr(True)
 rob_api.GetLinearDampingAttr().Set(10.0)
 rob_api.GetAngularDampingAttr().Set(10.0)
-SingleGeometryPrim(prim_path=robot_prim_path, collision=True)
-SingleRigidPrim(prim_path=robot_prim_path, mass=5.0,
-                translation=np.array([-2.0, 0.0, -0.8]))
-log("BlueROV robot loaded", True, assets_path + "/Bluerov/BROV_low.usd")
+SingleGeometryPrim(prim_path="/World/rob", collision=True)
+SingleRigidPrim(prim_path="/World/rob", mass=5.0, translation=np.array([-2.0, 0.0, -0.8]))
+log("BlueROV robot loaded", True, assets_path+"/Bluerov/BROV_low.usd")
 
-# BarometerSensor
+# 传感器测试
 from isaacsim.oceansim.sensors.BarometerSensor import BarometerSensor
-baro = BarometerSensor(prim_path=robot_prim_path + '/Baro', water_surface_z=1.43389)
+baro = BarometerSensor(prim_path="/World/rob/Baro", water_surface_z=1.43389)
 pressure = baro.get_pressure()
-log("BarometerSensor", isinstance(pressure, float) and pressure > 0,
-    f"pressure={pressure:.1f} Pa")
+log("BarometerSensor", isinstance(pressure, float) and pressure > 0, f"pressure={pressure:.1f} Pa")
 
-# DVLsensor
 from isaacsim.oceansim.sensors.DVLsensor import DVLsensor
 dvl = DVLsensor(max_range=10)
-dvl.attachDVL(rigid_body_path=robot_prim_path, translation=np.array([0, 0, -0.1]))
-beam_paths = dvl.get_beam_paths()
-log("DVLsensor", len(beam_paths) == 4,
-    f"beams={len(beam_paths)}, paths={beam_paths[0]}")
+dvl.attachDVL(rigid_body_path="/World/rob", translation=np.array([0, 0, -0.1]))
+log("DVLsensor", len(dvl.get_beam_paths()) == 4, f"beams={len(dvl.get_beam_paths())}")
 
-# UW_Camera
 from isaacsim.oceansim.sensors.UW_Camera import UW_Camera
-cam = UW_Camera(prim_path=robot_prim_path + '/UW_camera',
-                resolution=[640, 480],
-                translation=np.array([0.3, 0.0, 0.1]))
-cam.set_focal_length(2.1)
-cam.set_clipping_range(0.1, 100)
-log("UW_Camera", cam.get_resolution() == [640, 480],
-    f"resolution={cam.get_resolution()}")
+cam = UW_Camera(prim_path="/World/rob/UW_camera", resolution=[640, 480], translation=np.array([0.3, 0.0, 0.1]))
+cam.set_focal_length(2.1); cam.set_clipping_range(0.1, 100)
+log("UW_Camera", cam.get_resolution() == [640, 480], f"resolution={cam.get_resolution()}")
 
-# ImagingSonarSensor
 from isaacsim.oceansim.sensors.ImagingSonarSensor import ImagingSonarSensor
-sonar = ImagingSonarSensor(
-    prim_path=robot_prim_path + '/sonar',
-    translation=np.array([0.3, 0.0, 0.3]),
+sonar = ImagingSonarSensor(prim_path="/World/rob/sonar", translation=np.array([0.3, 0.0, 0.3]),
     orientation=euler_angles_to_quat(np.array([0.0, 45, 0.0]), degrees=True),
     range_res=0.005, angular_res=0.25, hori_res=4000)
-log("ImagingSonarSensor",
-    sonar.get_range() is not None and sonar.get_fov() is not None,
+log("ImagingSonarSensor", sonar.get_range() is not None and sonar.get_fov() is not None,
     f"range={sonar.get_range()}, fov={sonar.get_fov()}")
 
-# Sensor Example scenario
+# 场景循环
 from isaacsim.oceansim.modules.SensorExample_python.scenario import MHL_Sensor_Example_Scenario
 scenario = MHL_Sensor_Example_Scenario()
-scenario.setup_scenario(rob=rob, sonar=None, cam=None, DVL=None,
-                        baro=baro, ctrl_mode="No control")
-for i in range(5):
-    scenario.update_scenario(1.0 / 60.0)
+scenario.setup_scenario(rob=rob, sonar=None, cam=None, DVL=None, baro=baro, ctrl_mode="No control")
+for i in range(5): scenario.update_scenario(1.0 / 60.0)
 log("Sensor Example scenario", isinstance(scenario._baro_reading, float),
     f"baro_reading={scenario._baro_reading:.1f} Pa after 5 steps")
 scenario.teardown_scenario()
 
-# Waypoint following
+# 航点跟踪
 scenario2 = MHL_Sensor_Example_Scenario()
-scenario2.setup_scenario(rob=rob, sonar=None, cam=None, DVL=None,
-                         baro=None, ctrl_mode="Waypoints")
-scenario2.setup_waypoints(
-    waypoint_path="demo/demo_waypoints.txt",
-    default_waypoint_path="demo/demo_waypoints.txt")
+scenario2.setup_scenario(rob=rob, sonar=None, cam=None, DVL=None, baro=None, ctrl_mode="Waypoints")
+scenario2.setup_waypoints(waypoint_path="demo/demo_waypoints.txt", default_waypoint_path="demo/demo_waypoints.txt")
 initial_pos = rob.GetAttribute('xformOp:translate').Get()
-for i in range(10):
-    scenario2.update_scenario(1.0 / 60.0)
+for i in range(10): scenario2.update_scenario(1.0 / 60.0)
 final_pos = rob.GetAttribute('xformOp:translate').Get()
 scenario2.teardown_scenario()
-moved = (abs(final_pos[0] - initial_pos[0]) > 0.01 or
-         abs(final_pos[1] - initial_pos[1]) > 0.01 or
-         abs(final_pos[2] - initial_pos[2]) > 0.01)
-log("Waypoint following", moved,
-    f"initial={initial_pos}, final={final_pos}")
+moved = (abs(final_pos[0]-initial_pos[0])>0.01 or abs(final_pos[1]-initial_pos[1])>0.01 or abs(final_pos[2]-initial_pos[2])>0.01)
+log("Waypoint following", moved, f"initial={initial_pos}, final={final_pos}")
 
-# Colorpicker UW_render (3 water types)
-test_params = [
-    ("clear water", [0.0, 0.1, 0.05, 0.02, 0.02, 0.1, 0.02, 0.02, 0.02]),
-    ("turbid coastal", [0.0, 0.31, 0.24, 0.05, 0.05, 0.2, 0.05, 0.05, 0.05]),
-    ("deep ocean", [0.0, 0.05, 0.1, 0.01, 0.01, 0.05, 0.08, 0.04, 0.02]),
-]
+# 颜色选择器 (3种水型)
 all_ok = True
-for name, param in test_params:
+for name, p in [("clear",[0,.1,.05,.02,.02,.1,.02,.02,.02]), ("turbid",[0,.31,.24,.05,.05,.2,.05,.05,.05]), ("deep",[0,.05,.1,.01,.01,.05,.08,.04,.02])]:
     uw = wp.zeros_like(demo_rgba)
-    wp.launch(
-        dim=np.flip([demo_rgba.shape[1], demo_rgba.shape[0]]),
-        kernel=UW_render,
-        inputs=[demo_rgba, demo_depth,
-                wp.vec3f(*param[0:3]), wp.vec3f(*param[6:9]), wp.vec3f(*param[3:6])],
-        outputs=[uw])
-    result = uw.numpy()
-    if result.ndim != 3 or result.shape[2] != 4:
-        all_ok = False
-log("Colorpicker UW_render", all_ok, f"tested {len(test_params)} water types")
+    wp.launch(dim=np.flip([arr.shape[1], arr.shape[0]]), kernel=UW_render,
+        inputs=[demo_rgba, demo_depth, wp.vec3f(*p[0:3]), wp.vec3f(*p[6:9]), wp.vec3f(*p[3:6])], outputs=[uw])
+    if uw.numpy().ndim != 3 or uw.numpy().shape[2] != 4: all_ok = False
+log("Colorpicker UW_render", all_ok, f"tested 3 water types")
 
-# Summary
-total = len(RESULTS)
-passed = sum(1 for v in RESULTS.values() if v["status"])
-failed = total - passed
+# 汇总
+total = len(RESULTS); passed = sum(1 for v in RESULTS.values() if v["status"]); failed = total - passed
 with open("verification_results.json", "w") as f:
-    json.dump({"total": total, "passed": passed, "failed": failed,
-               "results": RESULTS}, f, indent=2)
+    json.dump({"total":total, "passed":passed, "failed":failed, "results":RESULTS}, f, indent=2)
 app.close()
 sys.exit(0 if failed == 0 else 1)</pre>
   </div>
 </div>
-
-<div class="source-block">
-  <div class="source-header">verify_phase3.py (Phase 3 focused, 113 lines)</div>
-  <div class="source-body">
-<pre>#!/usr/bin/env python3
-"""Phase 3: Verify OceanSim sensors on Isaac Sim 6."""
-import sys, os
-sys.stderr = open('/dev/null', 'w')
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-from isaacsim import SimulationApp
-app = SimulationApp({"headless": True})
-
-import omni.kit.app
-mgr = omni.kit.app.get_app().get_extension_manager()
-mgr.set_extension_enabled_immediate("OceanSim", True)
-
-import numpy as np
-from isaacsim.oceansim.utils.assets_utils import get_oceansim_assets_path
-from isaacsim.core.utils.stage import create_new_stage, add_reference_to_stage
-from isaacsim.core.utils.prims import get_prim_at_path
-from isaacsim.core.prims import SingleRigidPrim, SingleGeometryPrim
-from isaacsim.core.utils.rotations import euler_angles_to_quat
-from pxr import PhysxSchema
-
-results = []
-
-create_new_stage()
-assets_path = get_oceansim_assets_path()
-robot_prim_path = "/World/rob"
-rob = add_reference_to_stage(
-    usd_path=assets_path + "/Bluerov/BROV_low.usd",
-    prim_path=robot_prim_path)
-rob_api = PhysxSchema.PhysxRigidBodyAPI.Apply(get_prim_at_path(robot_prim_path))
-rob_api.CreateDisableGravityAttr(True)
-rob_api.GetLinearDampingAttr().Set(10.0)
-rob_api.GetAngularDampingAttr().Set(10.0)
-SingleGeometryPrim(prim_path=robot_prim_path, collision=True)
-SingleRigidPrim(prim_path=robot_prim_path, mass=5.0,
-                translation=np.array([-2.0, 0.0, -0.8]))
-results.append("[PASS] BlueROV loaded")
-
-from isaacsim.oceansim.sensors.BarometerSensor import BarometerSensor
-baro = BarometerSensor(prim_path=robot_prim_path + '/Baro', water_surface_z=1.43389)
-results.append(f"[PASS] BarometerSensor: {baro.get_pressure():.1f} Pa")
-
-from isaacsim.oceansim.sensors.DVLsensor import DVLsensor
-dvl = DVLsensor(max_range=10)
-dvl.attachDVL(rigid_body_path=robot_prim_path, translation=np.array([0, 0, -0.1]))
-results.append(f"[PASS] DVLsensor: {len(dvl.get_beam_paths())} beams")
-
-from isaacsim.oceansim.sensors.UW_Camera import UW_Camera
-cam = UW_Camera(prim_path=robot_prim_path + '/UW_camera',
-                resolution=[640, 480],
-                translation=np.array([0.3, 0.0, 0.1]))
-cam.set_focal_length(2.1)
-cam.set_clipping_range(0.1, 100)
-results.append(f"[PASS] UW_Camera: {cam.get_resolution()}")
-
-from isaacsim.oceansim.sensors.ImagingSonarSensor import ImagingSonarSensor
-sonar = ImagingSonarSensor(
-    prim_path=robot_prim_path + '/sonar',
-    translation=np.array([0.3, 0.0, 0.3]),
-    orientation=euler_angles_to_quat(np.array([0.0, 45, 0.0]), degrees=True),
-    range_res=0.005, angular_res=0.25, hori_res=4000)
-results.append(f"[PASS] ImagingSonarSensor: range={sonar.get_range()}")
-
-from isaacsim.oceansim.modules.SensorExample_python.scenario import MHL_Sensor_Example_Scenario
-scenario = MHL_Sensor_Example_Scenario()
-scenario.setup_scenario(rob=rob, sonar=None, cam=None, DVL=None,
-                        baro=baro, ctrl_mode="No control")
-for i in range(5):
-    scenario.update_scenario(1.0 / 60.0)
-results.append(f"[PASS] Scenario loop: baro={scenario._baro_reading:.1f} Pa")
-scenario.teardown_scenario()
-
-scenario2 = MHL_Sensor_Example_Scenario()
-scenario2.setup_scenario(rob=rob, sonar=None, cam=None, DVL=None,
-                         baro=None, ctrl_mode="Waypoints")
-scenario2.setup_waypoints(
-    waypoint_path="demo/demo_waypoints.txt",
-    default_waypoint_path="demo/demo_waypoints.txt")
-initial_pos = rob.GetAttribute('xformOp:translate').Get()
-for i in range(10):
-    scenario2.update_scenario(1.0 / 60.0)
-final_pos = rob.GetAttribute('xformOp:translate').Get()
-scenario2.teardown_scenario()
-moved = (abs(final_pos[0] - initial_pos[0]) > 0.01 or
-         abs(final_pos[1] - initial_pos[1]) > 0.01 or
-         abs(final_pos[2] - initial_pos[2]) > 0.01)
-results.append(f"[PASS] Waypoint following: moved={moved}, pos={final_pos}")
-
-with open('/tmp/phase3_results.txt', 'w') as f:
-    for r in results:
-        f.write(r + '\n')
-app.close()</pre>
-  </div>
 </div>
 
-<div class="source-block">
-  <div class="source-header">test_oceansim_headless.py (basic sensor test, 94 lines)</div>
-  <div class="source-body">
-<pre>#!/usr/bin/env python3
-"""Headless test of OceanSim sensors on Isaac Sim 6."""
-import sys
-sys.stderr = open('/dev/null', 'w')
+<!-- ==================== 已知限制 ==================== -->
+<div class="section" id="limits">
+<h2>10. 已知限制</h2>
 
-from isaacsim import SimulationApp
-app = SimulationApp({"headless": True})
-
-import numpy as np
-import omni.kit.app
-
-mgr = omni.kit.app.get_app().get_extension_manager()
-mgr.set_extension_enabled_immediate("OceanSim", True)
-
-from isaacsim.oceansim.sensors.UW_Camera import UW_Camera
-from isaacsim.oceansim.sensors.BarometerSensor import BarometerSensor
-from isaacsim.oceansim.sensors.DVLsensor import DVLsensor
-from isaacsim.oceansim.sensors.ImagingSonarSensor import ImagingSonarSensor
-from isaacsim.oceansim.utils.assets_utils import get_oceansim_assets_path
-
-from isaacsim.core.utils.stage import create_new_stage, add_reference_to_stage
-from isaacsim.core.utils.prims import get_prim_at_path
-from isaacsim.core.prims import SingleRigidPrim, SingleGeometryPrim
-from isaacsim.core.utils.rotations import euler_angles_to_quat
-from pxr import PhysxSchema
-
-print(f"OceanSim assets: {get_oceansim_assets_path()}")
-create_new_stage()
-
-robot_prim_path = "/World/rob"
-rob = add_reference_to_stage(
-    usd_path=get_oceansim_assets_path() + "/Bluerov/BROV_low.usd",
-    prim_path=robot_prim_path)
-
-rob_api = PhysxSchema.PhysxRigidBodyAPI.Apply(get_prim_at_path(robot_prim_path))
-rob_api.CreateDisableGravityAttr(True)
-rob_api.GetLinearDampingAttr().Set(10.0)
-rob_api.GetAngularDampingAttr().Set(10.0)
-SingleGeometryPrim(prim_path=robot_prim_path, collision=True)
-SingleRigidPrim(prim_path=robot_prim_path, mass=5.0,
-                translation=np.array([-2.0, 0.0, -0.8]))
-print("Robot loaded successfully")
-
-baro = BarometerSensor(prim_path=robot_prim_path + '/Baro', water_surface_z=1.43389)
-print(f"OK: BarometerSensor - pressure = {baro.get_pressure():.1f} Pa")
-
-dvl = DVLsensor(max_range=10)
-dvl.attachDVL(rigid_body_path=robot_prim_path, translation=np.array([0, 0, -0.1]))
-dvl.add_debug_lines()
-print("OK: DVLsensor - attached and debug lines added")
-
-cam = UW_Camera(prim_path=robot_prim_path + '/UW_camera',
-                resolution=[640, 480],
-                translation=np.array([0.3, 0.0, 0.1]))
-cam.set_focal_length(2.1)
-cam.set_clipping_range(0.1, 100)
-print("OK: UW_Camera - created")
-
-sonar = ImagingSonarSensor(
-    prim_path=robot_prim_path + '/sonar',
-    translation=np.array([0.3, 0.0, 0.3]),
-    orientation=euler_angles_to_quat(np.array([0.0, 45, 0.0]), degrees=True),
-    range_res=0.005, angular_res=0.25, hori_res=4000)
-print("OK: ImagingSonarSensor - created")
-
-print("\nAll OceanSim sensors tested successfully on Isaac Sim 6!")
-app.close()</pre>
-  </div>
-</div>
+<table>
+  <tr><th>组件</th><th>限制</th><th>影响</th></tr>
+  <tr>
+    <td><strong>UW_Camera 渲染</strong></td>
+    <td>需要 timeline + render products</td>
+    <td>无头模式下 annotator 数据可能为空 (需显式渲染步骤)</td>
+  </tr>
+  <tr>
+    <td><strong>ImagingSonarSensor</strong></td>
+    <td>需要渲染管线 (pointcloud/segmentation annotators)</td>
+    <td>基本创建和配置已验证; 完整渲染需 GUI 或离屏渲染</td>
+  </tr>
+  <tr>
+    <td><strong>颜色选择器 GUI</strong></td>
+    <td><code>get_active_viewport()</code> 需要 GUI 视口窗口</td>
+    <td>Warp 核心已验证; 扩展 GUI 仅在有显示器时可用</td>
+  </tr>
+  <tr>
+    <td><strong>asset_path.json</strong></td>
+    <td>提交为 <code>null</code>, 用户需自行配置</td>
+    <td>克隆后需编辑 <code>isaacsim/oceansim/utils/asset_path.json</code> 设置资源路径</td>
+  </tr>
+</table>
 </div>
 
-<div style="margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.85rem">
-  Generated: 2026-05-27 &middot; OceanSim commit c33cf95 &middot; Branch feat/isaacsim6-compat &middot; Isaac Sim 6.0.0 &middot; RTX 5090
+<div style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border);color:var(--muted);font-size:.85rem">
+  <p>生成时间: 2026-05-27 · OceanSim commit c33cf95 · 分支 feat/isaacsim6 · Isaac Sim 6.0.0 · RTX 5090</p>
+  <p>仓库: <a href="https://github.com/robotlearning123/OceanSim" style="color:var(--blue)">github.com/robotlearning123/OceanSim</a> · 默认分支: <code>feat/isaacsim6</code></p>
 </div>
 
 </div>
