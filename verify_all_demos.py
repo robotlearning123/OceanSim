@@ -17,12 +17,13 @@ import os
 import json
 
 sys.stderr = open('/dev/null', 'w')
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(_SCRIPT_DIR)
 
 RESULTS = {}
 
 def log(name, status, detail=""):
-    RESULTS[name] = {"status": status, "detail": detail}
+    RESULTS[name] = {"status": bool(status), "detail": str(detail)}
     tag = "PASS" if status else "FAIL"
     print(f"[{tag}] {name}: {detail}")
 
@@ -104,7 +105,17 @@ except Exception as e:
 # ============================================================
 print("\n=== Phase 3: Isaac Sim 6 + OceanSim Sensors ===")
 
+# Temporarily remove script dir from sys.path and clear cached isaacsim module
+# so 'import isaacsim' finds the installed Isaac Sim package, not the local
+# isaacsim/ namespace directory.
+if _SCRIPT_DIR in sys.path:
+    sys.path.remove(_SCRIPT_DIR)
+# Clear any cached local isaacsim modules so the real package loads
+for _k in list(sys.modules.keys()):
+    if _k == "isaacsim" or _k.startswith("isaacsim."):
+        del sys.modules[_k]
 from isaacsim import SimulationApp
+sys.path.insert(0, _SCRIPT_DIR)
 app = SimulationApp({"headless": True})
 
 import omni.kit.app
@@ -238,8 +249,8 @@ try:
     # Get initial position
     initial_pos = rob.GetAttribute('xformOp:translate').Get()
 
-    # Run 10 waypoint steps
-    for i in range(10):
+    # Run 50 waypoint steps
+    for i in range(50):
         scenario2.update_scenario(1.0 / 60.0)
 
     final_pos = rob.GetAttribute('xformOp:translate').Get()
@@ -316,8 +327,25 @@ if failed > 0:
             print(f"  - {name}: {result['detail']}")
 
 # Write results to JSON
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, np.bool_):
+            return bool(obj)
+        if isinstance(obj, (np.integer,)):
+            return int(obj)
+        if isinstance(obj, (np.floating,)):
+            return float(obj)
+        return super().default(obj)
+
+# Sanitize detail values to strings
+for _k in RESULTS:
+    if not isinstance(RESULTS[_k]["detail"], str):
+        RESULTS[_k]["detail"] = str(RESULTS[_k]["detail"])
+
 with open("verification_results.json", "w") as f:
-    json.dump({"total": total, "passed": passed, "failed": failed, "results": RESULTS}, f, indent=2)
+    json.dump({"total": total, "passed": passed, "failed": failed, "results": RESULTS}, f, indent=2, cls=NumpyEncoder)
 
 app.close()
 

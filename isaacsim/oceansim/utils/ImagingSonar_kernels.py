@@ -71,8 +71,11 @@ def bin_intensity(pcl: wp.array(dtype=wp.vec3),
     # Calculate the bin indices for range and azimuth
     x_bin_idx = wp.int32((x - x_offset) / x_res)
     y_bin_idx = wp.int32((y - y_offset) / y_res)
-    wp.atomic_add(bin_sum, x_bin_idx, y_bin_idx, intensity[tid])
-    wp.atomic_add(bin_count, x_bin_idx, y_bin_idx, 1)
+
+    # Bounds check to prevent out-of-bounds atomic writes
+    if x_bin_idx >= 0 and x_bin_idx < bin_sum.shape[0] and y_bin_idx >= 0 and y_bin_idx < bin_sum.shape[1]:
+        wp.atomic_add(bin_sum, x_bin_idx, y_bin_idx, intensity[tid])
+        wp.atomic_add(bin_count, x_bin_idx, y_bin_idx, 1)
 
 @wp.kernel 
 def average(sum: wp.array(ndim=2, dtype=wp.float32),
@@ -190,7 +193,7 @@ def make_sonar_image(sonar_data: wp.array(ndim=2, dtype=wp.vec3),
     i, j = wp.tid()
     width = sonar_data.shape[1]
     sonar_rgb = wp.uint8(sonar_data[i,j][2] * wp.float32(255))
-    sonar_image[i,width-j,0] = sonar_rgb
-    sonar_image[i,width-j,1] = sonar_rgb
-    sonar_image[i,width-j,2] = sonar_rgb
-    sonar_image[i,width-j,3] = wp.uint8(255)
+    sonar_image[i,width-j-1,0] = sonar_rgb
+    sonar_image[i,width-j-1,1] = sonar_rgb
+    sonar_image[i,width-j-1,2] = sonar_rgb
+    sonar_image[i,width-j-1,3] = wp.uint8(255)
