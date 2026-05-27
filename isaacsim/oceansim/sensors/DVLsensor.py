@@ -26,8 +26,8 @@ class DVLsensor:
                  max_range: float = 100,
                  num_beams_out_range_threshold: int = 2,
                  freq: int = None, # Hz
-                 freq_bound: tuple[int] = [5, 100], # Hz
-                 freq_dependenet_range_bound: tuple[float] = [7.5, 50.0], # m
+                 freq_bound: tuple[int, int] = [5, 100], # Hz
+                 freq_dependenet_range_bound: tuple[float, float] = [7.5, 50.0], # m
                  sound_speed: float = 1500, # m/s
                  ):
         """Initialize a DVL sensor with configurable beam geometry and operating parameters.

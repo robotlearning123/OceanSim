@@ -21,10 +21,8 @@ try:
     PXR_AVAILABLE = True
 except ImportError:
     PXR_AVAILABLE = False
-    Gf = None 
+    Gf = None
     PhysxSchema = None
-
-ROS2_AVAILABLE = False
 
 class ROS2_CONTROL_MODE(Enum):
     VEL = 1     # velocity control mode
@@ -124,21 +122,14 @@ class ROS2ControlReceiver:
             print(f'[{self._name}] Physics API set failed: {e}')
     
     def _setup_subscriber(self):
-        """
-        setting the ROS2 subscriber
-        """
+        """Setup ROS2 subscribers for velocity and force commands."""
         try:
-            # import ROS2 module
-            from sensor_msgs.msg import Image
             from geometry_msgs.msg import Twist, Wrench
-            from std_msgs.msg import Header
-            
-            # Initialize ROS2 context if not already done
+
             if not rclpy.ok():
                 rclpy.init()
                 print(f'[{self._name}] ROS2 context initialized')
-            
-            # Create velocity subscriber node
+
             node_name = f'oceansim_rob_velocity_control_{self._name.lower()}'.replace(' ', '_')
             self._ros2_vel_node = rclpy.create_node(node_name)
             self._ros2_vel_subscriber = self._ros2_vel_node.create_subscription(
@@ -148,7 +139,6 @@ class ROS2ControlReceiver:
                 10
             )
 
-            # Create force subscriber node
             node_name = f'oceansim_rob_force_control_{self._name.lower()}'.replace(' ', '_')
             self._ros2_force_node = rclpy.create_node(node_name)
             self._force_subscriber = self._ros2_force_node.create_subscription(
@@ -157,8 +147,9 @@ class ROS2ControlReceiver:
                 self._force_callback,
                 10
             )
-            
+
         except Exception as e:
+            print(f'[{self._name}] ROS2 subscriber setup failed: {e}')
             self._enable_ros2 = False
 
     def _setup_ros2_control_mode(self, ctrl_mode):
@@ -168,109 +159,71 @@ class ROS2ControlReceiver:
             self._ros2_control_mode = ROS2_CONTROL_MODE.FORCE
     
     def _vel_callback(self, msg):
-        """
-        msg type: geometry_msgs/Twist
-        
-        include linear and angular velocity
-        """
-        print(f'[{self._name}] recieve ROS2 msg, type: {type(msg).__name__}, linear: {msg.linear}, angular: {msg.angular}')
-        
+        """geometry_msgs/Twist callback for velocity commands."""
         if not self._enable_ros2:
-            print(f'[{self._name}] ROS2 is not enabled, ignore msg')
             return
-        
+
         try:
-            current_time = time.time()
-            
             self.linear_vel = [msg.linear.x, msg.linear.y, msg.linear.z]
             self.angular_vel = [msg.angular.x, msg.angular.y, msg.angular.z]
-            self.last_command_time = current_time
-            
-            print(f'Received velocity - Linear: {self.linear_vel}, Angular: {self.angular_vel}')
-            # self._update_receive_stats(current_time)
-            
+            self.last_command_time = time.time()
         except Exception as e:
             print(f'[{self._name}] Vel Receive Failed: {e}')
-        
-    def _force_callback(self, msg):
-        """
-        msg type: geometry_msgs/Wrench
-        
-        include force and torque
-        """
-        print(f'[{self._name}] recieve ROS2 msg, type: {type(msg).__name__}, force: {msg.force}, torque: {msg.torque}')
 
+    def _force_callback(self, msg):
+        """geometry_msgs/Wrench callback for force/torque commands."""
         if not self._enable_ros2:
-            print(f'[{self._name}] ROS2 is not enabled, ignore msg')
             return
 
         try:
-            current_time = time.time()
-
-            self.force_cmd = [msg.force.x, msg.force.y, msg.force.z]  # force
-            self.torque_cmd = [msg.torque.x, msg.torque.y, msg.torque.z]  # torque
-            self.last_command_time = current_time
-
-            print(f'Received force - Force: {self.force_cmd}, Torque: {self.torque_cmd}')
-
+            self.force_cmd = [msg.force.x, msg.force.y, msg.force.z]
+            self.torque_cmd = [msg.torque.x, msg.torque.y, msg.torque.z]
+            self.last_command_time = time.time()
         except Exception as e:
-            print(f'[{self._name}] force Receive Failed: {e}')
+            print(f'[{self._name}] Force Receive Failed: {e}')
     
     def update_control(self):
-        """
-        update control
-        
-        this function will be called in each simulation step. ( in scenario.update_scenario() )
-        """
-        if not self._enable_ros2 or not self._ros2_vel_node or not self._ros2_force_node:
+        """Called each simulation step from scenario.update_scenario()."""
+        if not self._enable_ros2:
             return
-        
+
         try:
-            if self._ros2_control_mode == ROS2_CONTROL_MODE.VEL: # velocity mode
-                self._update_count += 1
+            self._update_count += 1
+            if self._update_count % 10 != 0:
+                return
+            self._update_count = 0
 
-                if self._update_count % 10 == 0: # need delay, otherwise the scene will be blocked
-                    self._update_count = 0
+            if self._ros2_control_mode == ROS2_CONTROL_MODE.VEL and self._ros2_vel_node:
+                rclpy.spin_once(self._ros2_vel_node, timeout_sec=0.0)
 
-                    rclpy.spin_once(self._ros2_vel_node, timeout_sec=0.0)
-                    
-                    rigid_prim = SingleRigidPrim(prim_path=get_prim_path(self._robot_prim))
-                    rigid_prim.set_linear_velocity(np.array([0.0, 0.0, 0.0]))  # reset
-                    rigid_prim.set_angular_velocity(np.array([0.0, 0.0, 0.0]))  # reset
-                    rigid_prim.set_linear_velocity(np.array(self.linear_vel))
-                    rigid_prim.set_angular_velocity(np.array(self.angular_vel))
+                rigid_prim = SingleRigidPrim(prim_path=get_prim_path(self._robot_prim))
+                rigid_prim.set_linear_velocity(np.array(self.linear_vel))
+                rigid_prim.set_angular_velocity(np.array(self.angular_vel))
 
-            elif self._ros2_control_mode == ROS2_CONTROL_MODE.FORCE: # force mode
-                # using PXR API to contorl
+            elif self._ros2_control_mode == ROS2_CONTROL_MODE.FORCE and self._ros2_force_node:
                 if PXR_AVAILABLE:
-                    
-                    self._update_count += 1
+                    rclpy.spin_once(self._ros2_force_node, timeout_sec=0.0)
 
-                    if self._update_count % 10 == 0: # need delay, otherwise the scene will be blocked
-                        self._update_count = 0
+                    force_gf = Gf.Vec3f(float(self.force_cmd[0]), float(self.force_cmd[1]), float(self.force_cmd[2]))
+                    torque_gf = Gf.Vec3f(float(self.torque_cmd[0]), float(self.torque_cmd[1]), float(self.torque_cmd[2]))
 
-                        rclpy.spin_once(self._ros2_force_node, timeout_sec=0.0)
+                    if self._force_api:
+                        self._force_api.CreateForceAttr().Set(force_gf)
+                        self._force_api.CreateTorqueAttr().Set(torque_gf)
 
-                        force_gf = Gf.Vec3f(float(self.force_cmd[0]), float(self.force_cmd[1]), float(self.force_cmd[2]))
-                        torque_gf = Gf.Vec3f(float(self.torque_cmd[0]), float(self.torque_cmd[1]), float(self.torque_cmd[2]))
-                    
-                        if self._force_api:
-                            try:
-                                self._force_api.CreateForceAttr().Set(force_gf)
-                                self._force_api.CreateTorqueAttr().Set(torque_gf)
-                            except Exception as e:
-                                print(f'[{self._name}] Force API Update Failed: {e}')
-                
         except Exception as e:
             print(f'[{self._name}] Control Update Failed: {e}')
     
     def close(self):
-        # Clean up ROS2 resources
+        """Clean up ROS2 nodes. Does not call rclpy.shutdown() since the
+        context is shared with other components (e.g. UW_Camera publisher)."""
         if self._enable_ros2:
             if self._ros2_vel_node:
                 self._ros2_vel_node.destroy_node()
+                self._ros2_vel_node = None
             if self._ros2_force_node:
                 self._ros2_force_node.destroy_node()
+                self._ros2_force_node = None
 
         self._update_count = 0
         self.force_cmd = [0.0, 0.0, 0.0]
@@ -278,7 +231,5 @@ class ROS2ControlReceiver:
         self.linear_vel = [0.0, 0.0, 0.0]
         self.angular_vel = [0.0, 0.0, 0.0]
 
-        rclpy.shutdown()
-
-        print(f'[{self._name}] ROS2_Control_receiver closed.') 
+        print(f'[{self._name}] ROS2_Control_receiver closed.')
 

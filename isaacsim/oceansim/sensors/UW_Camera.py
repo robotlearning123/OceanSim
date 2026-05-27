@@ -112,8 +112,8 @@ class UW_Camera(Camera):
                     carb.log_error(f"[{self._name}] Error reading YAML file: {exc}")
         else:
             self._backscatter_value = wp.vec3f(*UW_param[0:3])
-            self._atten_coeff = wp.vec3f(*UW_param[6:9])
-            self._backscatter_coeff = wp.vec3f(*UW_param[3:6])
+            self._atten_coeff = wp.vec3f(*UW_param[3:6])
+            self._backscatter_coeff = wp.vec3f(*UW_param[6:9])
             print(f'[{self._name}] On {str(self._device)}. Using default render parameters.')
 
         
@@ -188,7 +188,6 @@ class UW_Camera(Camera):
             msg.data = compressed_img.tobytes()
 
             self._uw_img_pub.publish(msg)
-            rclpy.spin_once(self._ros2_uw_img_node, timeout_sec=0.0)
             self._last_publish_time = current_time
 
         except Exception as e:
@@ -273,6 +272,7 @@ class UW_Camera(Camera):
 
         if self._enable_ros2_pub and hasattr(self, '_ros2_uw_img_node') and self._ros2_uw_img_node:
             self._ros2_uw_img_node.destroy_node()
+            self._ros2_uw_img_node = None
 
         print(f'[{self._name}] Annotator detached. AnnotatorCache cleaned.')
     

@@ -8,7 +8,7 @@ category = "Simulation"
 title = "OceanSim"
 description = "Underwater simulation utilities"
 authors = ["FRoG--University of Michigan"]
-repository = ""
+repository = "https://github.com/robotlearning123/OceanSim"
 keywords = ["Underwater","Sensor","Scene"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -21,6 +21,9 @@ icon = "data/icon.png"
 "isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
 "isaacsim.examples.extension" = {}
+
+[dependencies."isaacsim.ros2.bridge"]
+optional = true
 
 
 [[python.module]]
