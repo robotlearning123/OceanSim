@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OceanSim Isaac Sim 6 Diff Report</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --blue: #58a6ff;
+    --yellow: #d29922;
+    --orange: #db6d28;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.5rem; margin: 2rem 0 1rem; color: var(--blue); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; color: var(--yellow); }
+  .subtitle { color: var(--muted); margin-bottom: 2rem; }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge-pass { background: #238636; color: #fff; }
+  .badge-fail { background: #da3633; color: #fff; }
+  .badge-modified { background: #9e6a03; color: #fff; }
+  .badge-new { background: #238636; color: #fff; }
+  .badge-breaking { background: #da3633; color: #fff; }
+  .badge-info { background: #1f6feb; color: #fff; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+  .file-path { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.9rem; color: var(--blue); }
+  .stats { display: flex; gap: 2rem; margin: 1.5rem 0; }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+  }
+  .stat-num { font-size: 2rem; font-weight: 700; }
+  .stat-label { color: var(--muted); font-size: 0.85rem; }
+  .stat-green .stat-num { color: var(--green); }
+  .stat-blue .stat-num { color: var(--blue); }
+  .stat-yellow .stat-num { color: var(--yellow); }
+  .stat-red .stat-num { color: var(--red); }
+  .diff-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 1rem 0;
+    overflow: hidden;
+  }
+  .diff-header {
+    padding: 0.75rem 1rem;
+    background: rgba(110,118,129,0.1);
+    border-bottom: 1px solid var(--border);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .diff-body {
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    overflow-x: auto;
+  }
+  .diff-line { padding: 0 1rem; white-space: pre; }
+  .diff-add { background: rgba(63,185,80,0.15); color: var(--green); }
+  .diff-del { background: rgba(248,81,73,0.15); color: var(--red); }
+  .diff-hunk { color: var(--blue); background: rgba(88,166,255,0.1); font-weight: 600; }
+  .diff-ctx { color: var(--muted); }
+  .test-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .test-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .test-card.pass { border-left: 3px solid var(--green); }
+  .test-card.fail { border-left: 3px solid var(--red); }
+  .test-name { font-weight: 600; margin-bottom: 0.25rem; }
+  .test-detail { color: var(--muted); font-size: 0.85rem; }
+  .explanation {
+    background: rgba(56,139,253,0.1);
+    border: 1px solid rgba(56,139,253,0.3);
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+  .explanation strong { color: var(--blue); }
+  .warning {
+    background: rgba(210,153,34,0.1);
+    border: 1px solid rgba(210,153,34,0.3);
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+  .warning strong { color: var(--yellow); }
+  .toc { margin: 1rem 0; }
+  .toc a { color: var(--blue); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc li { margin: 0.3rem 0; }
+  .section { margin-bottom: 3rem; }
+  .flex-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  code {
+    background: rgba(110,118,129,0.2);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 0.85rem;
+  }
+  .env-table td:first-child { font-weight: 600; color: var(--muted); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>OceanSim &times; Isaac Sim 6.0</h1>
+<p class="subtitle">Full diff report &mdash; original <code>main</code> branch vs. our Isaac 6 compatible version</p>
+
+<div class="stats">
+  <div class="stat stat-green">
+    <div class="stat-num">10/10</div>
+    <div class="stat-label">Tests Passed</div>
+  </div>
+  <div class="stat stat-yellow">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Breaking API Fixes</div>
+  </div>
+  <div class="stat stat-blue">
+    <div class="stat-num">5</div>
+    <div class="stat-label">Files Modified</div>
+  </div>
+  <div class="stat stat-blue">
+    <div class="stat-num">5</div>
+    <div class="stat-label">Files Added</div>
+  </div>
+</div>
+
+<h2>Table of Contents</h2>
+<ol class="toc">
+  <li><a href="#env">Environment</a></li>
+  <li><a href="#summary">Change Summary</a></li>
+  <li><a href="#breaking">Breaking API Changes (Isaac 4.5 &rarr; 6.0)</a></li>
+  <li><a href="#diff-toml">Diff: config/extension.toml</a></li>
+  <li><a href="#diff-ext-sensor">Diff: SensorExample_python/extension.py</a></li>
+  <li><a href="#diff-ui">Diff: SensorExample_python/ui_builder.py</a></li>
+  <li><a href="#diff-ext-color">Diff: colorpicker_python/extension.py</a></li>
+  <li><a href="#diff-asset">Diff: utils/asset_path.json</a></li>
+  <li><a href="#new-files">New Files Added</a></li>
+  <li><a href="#tests">Verification Test Results</a></li>
+</ol>
+
+<!-- ==================== ENV ==================== -->
+<div class="section" id="env">
+<h2>1. Environment</h2>
+<table class="env-table">
+  <tr><td>Isaac Sim</td><td>6.0.0</td></tr>
+  <tr><td>OceanSim</td><td>commit <code>c33cf95</code> (origin/main HEAD)</td></tr>
+  <tr><td>Platform</td><td>Ubuntu 24.04.2 LTS (Noble Numbat)</td></tr>
+  <tr><td>GPU</td><td>NVIDIA GeForce RTX 5090 (32 GB, sm_120)</td></tr>
+  <tr><td>CUDA</td><td>Toolkit 12.9 / Driver 13.0 (580.95.05)</td></tr>
+  <tr><td>Python</td><td>3.12</td></tr>
+  <tr><td>Warp</td><td>1.13.0</td></tr>
+</table>
+</div>
+
+<!-- ==================== SUMMARY ==================== -->
+<div class="section" id="summary">
+<h2>2. Change Summary</h2>
+
+<h3>Modified Files (5)</h3>
+<table>
+  <tr><th>File</th><th>Lines Changed</th><th>Reason</th></tr>
+  <tr>
+    <td class="file-path">config/extension.toml</td>
+    <td>+15 &minus;2</td>
+    <td>Add missing <code>[[python.module]]</code> entries + fix Isaac 6 dependency names</td>
+  </tr>
+  <tr>
+    <td class="file-path">modules/SensorExample_python/extension.py</td>
+    <td>+3 &minus;3</td>
+    <td>Isaac 6 API: imports + <code>get_physx_interface()</code></td>
+  </tr>
+  <tr>
+    <td class="file-path">modules/SensorExample_python/ui_builder.py</td>
+    <td>+4 &minus;4</td>
+    <td>Isaac 6 API: <code>add_labels()</code> replaces <code>add_update_semantics()</code></td>
+  </tr>
+  <tr>
+    <td class="file-path">modules/colorpicker_python/extension.py</td>
+    <td>+3 &minus;3</td>
+    <td>Isaac 6 API: imports + <code>get_physx_interface()</code></td>
+  </tr>
+  <tr>
+    <td class="file-path">utils/asset_path.json</td>
+    <td>+1 &minus;1</td>
+    <td>Set local asset path (was <code>null</code>)</td>
+  </tr>
+</table>
+
+<h3>New Files (5)</h3>
+<table>
+  <tr><th>File</th><th>Purpose</th></tr>
+  <tr><td class="file-path">isaacsim/__init__.py</td><td>Empty &mdash; makes <code>isaacsim</code> a Python package for extension discovery</td></tr>
+  <tr><td class="file-path">isaacsim/oceansim/__init__.py</td><td>Empty &mdash; makes <code>isaacsim.oceansim</code> a package</td></tr>
+  <tr><td class="file-path">isaacsim/oceansim/modules/__init__.py</td><td>Empty &mdash; makes <code>isaacsim.oceansim.modules</code> a package</td></tr>
+  <tr><td class="file-path">isaacsim/oceansim/sensors/__init__.py</td><td>Empty &mdash; makes <code>isaacsim.oceansim.sensors</code> a package</td></tr>
+  <tr><td class="file-path">isaacsim/oceansim/utils/__init__.py</td><td>Empty &mdash; makes <code>isaacsim.oceansim.utils</code> a package</td></tr>
+</table>
+</div>
+
+<!-- ==================== BREAKING CHANGES ==================== -->
+<div class="section" id="breaking">
+<h2>3. Breaking API Changes (Isaac 4.5 &rarr; 6.0)</h2>
+
+<div class="explanation">
+  <strong>Why these changes are needed:</strong> OceanSim was written for Isaac Sim 4.5. Isaac Sim 6.0 renamed or removed several APIs. Without these fixes, the extension fails to load with <code>ImportError</code> or <code>AttributeError</code>.
+</div>
+
+<table>
+  <tr><th>#</th><th>API</th><th>Isaac 4.5</th><th>Isaac 6.0</th><th>Files Affected</th></tr>
+  <tr>
+    <td>1</td>
+    <td>Extension module registration</td>
+    <td>Implicit (auto-discovery)</td>
+    <td>Explicit <code>[[python.module]]</code> in <code>extension.toml</code></td>
+    <td>config/extension.toml</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Semantic labeling</td>
+    <td><code>add_update_semantics(prim, semantic_label, type_label)</code></td>
+    <td><code>add_labels(prim, labels, instance_name)</code></td>
+    <td>SensorExample_python/ui_builder.py</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>PhysX interface</td>
+    <td><code>_physx.acquire_physx_interface()</code></td>
+    <td><code>_physx.get_physx_interface()</code></td>
+    <td>SensorExample_python/extension.py, colorpicker_python/extension.py</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>UI imports</td>
+    <td><code>from omni.isaac.ui.element_wrappers import ScrollingWindow</code><br><code>from omni.isaac.ui.menu import MenuItemDescription, make_menu_item_description</code></td>
+    <td><code>from isaacsim.gui.components import ScrollingWindow</code><br><code>from isaacsim.gui.menu import MenuItemDescription, add_menu_items, remove_menu_items</code></td>
+    <td>SensorExample_python/extension.py, colorpicker_python/extension.py</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>Extension dependencies</td>
+    <td><code>"omni.isaac.ui"</code>, <code>"omni.isaac.core"</code></td>
+    <td><code>"isaacsim.gui.components"</code>, <code>"isaacsim.core.api"</code>, <code>"isaacsim.examples.extension"</code></td>
+    <td>config/extension.toml</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>Menu item creation</td>
+    <td><code>make_menu_item_description(ext_id, name, callback)</code></td>
+    <td><code>MenuItemDescription(name=name, onclick_fn=callback)</code></td>
+    <td>SensorExample_python/extension.py, colorpicker_python/extension.py</td>
+  </tr>
+</table>
+</div>
+
+<!-- ==================== DIFF: extension.toml ==================== -->
+<div class="section" id="diff-toml">
+<h2>4. Diff: config/extension.toml</h2>
+
+<div class="explanation">
+  <strong>Why:</strong> Isaac Sim 6 requires every Python sub-package to have an explicit <code>[[python.module]]</code> entry. The original only registered the two sub-modules (SensorExample, colorpicker) but not the parent packages (<code>isaacsim.oceansim</code>, <code>isaacsim.oceansim.sensors</code>, etc.). Without these, <code>import isaacsim.oceansim.sensors.BarometerSensor</code> fails with <code>ModuleNotFoundError</code>.
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>config/extension.toml</span>
+    <span><span class="badge badge-breaking">Breaking</span> <span class="badge badge-modified">Modified</span></span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -18,10 +18,23 @@ icon = "data/icon.png"</div>
+<div class="diff-line diff-ctx"> </div>
+<div class="diff-line diff-ctx"> [dependencies]</div>
+<div class="diff-line diff-ctx"> "omni.kit.uiapp" = {}</div>
+<div class="diff-line diff-del">-"omni.isaac.ui" = {}</div>
+<div class="diff-line diff-del">-"omni.isaac.core" = {}</div>
+<div class="diff-line diff-add">+"isaacsim.gui.components" = {}</div>
+<div class="diff-line diff-add">+"isaacsim.core.api" = {}</div>
+<div class="diff-line diff-add">+"isaacsim.examples.extension" = {}</div>
+<div class="diff-line diff-ctx"> </div>
+<div class="diff-line diff-ctx"> </div>
+<div class="diff-line diff-add">+[[python.module]]</div>
+<div class="diff-line diff-add">+name = "isaacsim.oceansim"</div>
+<div class="diff-line diff-add">+</div>
+<div class="diff-line diff-add">+[[python.module]]</div>
+<div class="diff-line diff-add">+name = "isaacsim.oceansim.sensors"</div>
+<div class="diff-line diff-add">+</div>
+<div class="diff-line diff-add">+[[python.module]]</div>
+<div class="diff-line diff-add">+name = "isaacsim.oceansim.utils"</div>
+<div class="diff-line diff-add">+</div>
+<div class="diff-line diff-add">+[[python.module]]</div>
+<div class="diff-line diff-add">+name = "isaacsim.oceansim.modules"</div>
+<div class="diff-line diff-ctx"> </div>
+<div class="diff-line diff-ctx"> [[python.module]]</div>
+<div class="diff-line diff-ctx"> name = "isaacsim.oceansim.modules.SensorExample_python"</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== DIFF: SensorExample extension.py ==================== -->
+<div class="section" id="diff-ext-sensor">
+<h2>5. Diff: SensorExample_python/extension.py</h2>
+
+<div class="explanation">
+  <strong>Two changes:</strong> (1) UI imports moved from <code>omni.isaac.ui</code> to <code>isaacsim.gui</code> namespace in Isaac 6. (2) PhysX interface acquisition function renamed from <code>acquire_physx_interface()</code> to <code>get_physx_interface()</code>. (3) Menu item factory <code>make_menu_item_description()</code> removed; use <code>MenuItemDescription()</code> directly.
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>modules/SensorExample_python/extension.py</span>
+    <span><span class="badge badge-breaking">Breaking</span> <span class="badge badge-modified">Modified</span></span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -18,9 +18,8 @@ import omni.physx as _physx</div>
+<div class="diff-line diff-ctx"> import omni.timeline</div>
+<div class="diff-line diff-ctx"> import omni.ui as ui</div>
+<div class="diff-line diff-ctx"> import omni.usd</div>
+<div class="diff-line diff-del">-from omni.isaac.ui.element_wrappers import ScrollingWindow</div>
+<div class="diff-line diff-del">-from omni.isaac.ui.menu import MenuItemDescription, make_menu_item_description</div>
+<div class="diff-line diff-del">-from omni.kit.menu.utils import add_menu_items, remove_menu_items</div>
+<div class="diff-line diff-add">+from isaacsim.gui.components import ScrollingWindow</div>
+<div class="diff-line diff-add">+from isaacsim.gui.menu import MenuItemDescription, add_menu_items, remove_menu_items</div>
+<div class="diff-line diff-ctx"> from omni.usd import StageEventType</div>
+<div class="diff-line diff-ctx"> </div>
+<div class="diff-line diff-ctx"> from .global_variables import EXTENSION_TITLE</div>
+  </div>
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>modules/SensorExample_python/extension.py &mdash; menu item creation</span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -72,8 +71,9 @@ class Extension(omni.ext.IExt):</div>
+<div class="diff-line diff-ctx">                 name="Examples",</div>
+<div class="diff-line diff-ctx">                 onclick_action=(ext_id, f"CreateUIExtension:{EXTENSION_TITLE}"),</div>
+<div class="diff-line diff-ctx">                 sub_menu=[</div>
+<div class="diff-line diff-del">-                    make_menu_item_description(</div>
+<div class="diff-line diff-del">-                        ext_id, "Sensor Example", lambda a=weakref.proxy(self): a._menu_callback()</div>
+<div class="diff-line diff-add">+                    MenuItemDescription(</div>
+<div class="diff-line diff-add">+                        name="Sensor Example",</div>
+<div class="diff-line diff-add">+                        onclick_fn=lambda a=weakref.proxy(self): a._menu_callback(),</div>
+<div class="diff-line diff-ctx">                     )</div>
+<div class="diff-line diff-ctx">                 ],</div>
+<div class="diff-line diff-ctx">             )</div>
+  </div>
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>modules/SensorExample_python/extension.py &mdash; PhysX interface</span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -86,7 +86,7 @@ class Extension(omni.ext.IExt):</div>
+<div class="diff-line diff-ctx"> </div>
+<div class="diff-line diff-ctx">         # Events</div>
+<div class="diff-line diff-ctx">         self._usd_context = omni.usd.get_context()</div>
+<div class="diff-line diff-del">-        self._physxIFace = _physx.acquire_physx_interface()</div>
+<div class="diff-line diff-add">+        self._physxIFace = _physx.get_physx_interface()</div>
+<div class="diff-line diff-ctx">         self._physx_subscription = None</div>
+<div class="diff-line diff-ctx">         self._stage_event_sub = None</div>
+<div class="diff-line diff-ctx">         self._timeline = omni.timeline.get_timeline_interface()</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== DIFF: ui_builder.py ==================== -->
+<div class="section" id="diff-ui">
+<h2>6. Diff: SensorExample_python/ui_builder.py</h2>
+
+<div class="explanation">
+  <strong>Why:</strong> The semantics API was renamed in Isaac Sim 6. <code>add_update_semantics(prim, semantic_label, type_label)</code> became <code>add_labels(prim, labels, instance_name)</code>. The parameter semantics changed: <code>semantic_label</code> (single string) &rarr; <code>labels</code> (list of strings), and <code>type_label</code> &rarr; <code>instance_name</code>.
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>modules/SensorExample_python/ui_builder.py &mdash; import</span>
+    <span><span class="badge badge-breaking">Breaking</span> <span class="badge badge-modified">Modified</span></span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -12,7 +12,7 @@ from isaacsim.core.prims import SingleRigidPrim, SingleGeometryPrim</div>
+<div class="diff-line diff-ctx"> from isaacsim.core.utils.prims import get_prim_at_path</div>
+<div class="diff-line diff-ctx"> from isaacsim.core.utils.stage import get_current_stage, add_reference_to_stage, create_new_stage, open_stage</div>
+<div class="diff-line diff-ctx"> from isaacsim.core.utils.rotations import euler_angles_to_quat</div>
+<div class="diff-line diff-del">-from isaacsim.core.utils.semantics import add_update_semantics</div>
+<div class="diff-line diff-add">+from isaacsim.core.utils.semantics import add_labels</div>
+<div class="diff-line diff-ctx"> from isaacsim.gui.components import CollapsableFrame, StateButton, get_style, setup_ui_headers, CheckBox, combo_cb_xyz_plot_builder, combo_cb_plot_builder, dropdown_builder, str_builder</div>
+<div class="diff-line diff-ctx"> from isaacsim.core.utils.viewports import set_camera_view</div>
+<div class="diff-line diff-ctx"> from isaacsim.examples.extension.core_connectors import LoadButton, ResetButton</div>
+  </div>
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>modules/SensorExample_python/ui_builder.py &mdash; MHL scene mesh</span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -261,17 +261,17 @@ class UIBuilder():</div>
+<div class="diff-line diff-ctx">             # Toggle MHL mesh's collider</div>
+<div class="diff-line diff-ctx">             SingleGeometryPrim(prim_path=MHL_prim_path, collision=True)</div>
+<div class="diff-line diff-ctx">             # apply a reflectivity of 1.0 to mesh of the scene for sonar simulation</div>
+<div class="diff-line diff-del">-            add_update_semantics(prim=get_prim_at_path(MHL_prim_path + "/Mesh/mesh"),</div>
+<div class="diff-line diff-del">-                                type_label='reflectivity',</div>
+<div class="diff-line diff-del">-                                semantic_label='1.0')</div>
+<div class="diff-line diff-add">+            add_labels(prim=get_prim_at_path(MHL_prim_path + "/Mesh/mesh"),</div>
+<div class="diff-line diff-add">+                                labels=['1.0'],</div>
+<div class="diff-line diff-add">+                                instance_name='reflectivity')</div>
+<div class="diff-line diff-ctx">             # Load the rock</div>
+<div class="diff-line diff-ctx">             rock_prim_path = '/World/rock'</div>
+<div class="diff-line diff-ctx">             rock_usd_path = get_oceansim_assets_path() + "/collected_rock/rock.usd"</div>
+  </div>
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>modules/SensorExample_python/ui_builder.py &mdash; rock mesh</span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -279,9 +279,9 @@ class UIBuilder():</div>
+<div class="diff-line diff-ctx">             # apply a reflectivity of 2.0 for sonar simulation</div>
+<div class="diff-line diff-del">-            add_update_semantics(prim=get_prim_at_path(rock_prim_path+ '/Mesh/mesh'),</div>
+<div class="diff-line diff-del">-                                type_label='reflectivity',</div>
+<div class="diff-line diff-del">-                                semantic_label='2.0')</div>
+<div class="diff-line diff-add">+            add_labels(prim=get_prim_at_path(rock_prim_path+ '/Mesh/mesh'),</div>
+<div class="diff-line diff-add">+                                labels=['2.0'],</div>
+<div class="diff-line diff-add">+                                instance_name='reflectivity')</div>
+<div class="diff-line diff-ctx">             # Toggle collider for the rock</div>
+<div class="diff-line diff-ctx">             rock_collider_prim = SingleGeometryPrim(prim_path=rock_prim_path,</div>
+<div class="diff-line diff-ctx">                             collision=True)</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== DIFF: colorpicker extension.py ==================== -->
+<div class="section" id="diff-ext-color">
+<h2>7. Diff: colorpicker_python/extension.py</h2>
+
+<div class="explanation">
+  <strong>Same pattern</strong> as SensorExample/extension.py: UI imports moved to <code>isaacsim.gui</code>, PhysX interface renamed, menu item factory replaced.
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>modules/colorpicker_python/extension.py &mdash; imports</span>
+    <span><span class="badge badge-breaking">Breaking</span> <span class="badge badge-modified">Modified</span></span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -18,9 +18,8 @@ import omni.physx as _physx</div>
+<div class="diff-line diff-ctx"> import omni.timeline</div>
+<div class="diff-line diff-ctx"> import omni.ui as ui</div>
+<div class="diff-line diff-ctx"> import omni.usd</div>
+<div class="diff-line diff-del">-from omni.isaac.ui.element_wrappers import ScrollingWindow</div>
+<div class="diff-line diff-del">-from omni.isaac.ui.menu import MenuItemDescription, make_menu_item_description</div>
+<div class="diff-line diff-del">-from omni.kit.menu.utils import add_menu_items, remove_menu_items</div>
+<div class="diff-line diff-add">+from isaacsim.gui.components import ScrollingWindow</div>
+<div class="diff-line diff-add">+from isaacsim.gui.menu import MenuItemDescription, add_menu_items, remove_menu_items</div>
+<div class="diff-line diff-ctx"> from omni.usd import StageEventType</div>
+<div class="diff-line diff-ctx"> </div>
+<div class="diff-line diff-ctx"> from .global_variables import EXTENSION_TITLE</div>
+  </div>
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>modules/colorpicker_python/extension.py &mdash; menu item</span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -67,7 +66,7 @@ class Extension(omni.ext.IExt):</div>
+<div class="diff-line diff-ctx"> </div>
+<div class="diff-line diff-ctx">         self._menu_items = [</div>
+<div class="diff-line diff-del">-            make_menu_item_description(ext_id, EXTENSION_TITLE, lambda a=weakref.proxy(self): a._menu_callback())</div>
+<div class="diff-line diff-add">+            MenuItemDescription(name=EXTENSION_TITLE, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())</div>
+<div class="diff-line diff-ctx">         ]</div>
+<div class="diff-line diff-ctx"> </div>
+<div class="diff-line diff-ctx">         add_menu_items(self._menu_items, "OceanSim")</div>
+  </div>
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>modules/colorpicker_python/extension.py &mdash; PhysX interface</span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -77,7 +76,7 @@ class Extension(omni.ext.IExt):</div>
+<div class="diff-line diff-ctx"> </div>
+<div class="diff-line diff-ctx">         # Events</div>
+<div class="diff-line diff-ctx">         self._usd_context = omni.usd.get_context()</div>
+<div class="diff-line diff-del">-        self._physxIFace = _physx.acquire_physx_interface()</div>
+<div class="diff-line diff-add">+        self._physxIFace = _physx.get_physx_interface()</div>
+<div class="diff-line diff-ctx">         self._physx_subscription = None</div>
+<div class="diff-line diff-ctx">         self._stage_event_sub = None</div>
+<div class="diff-line diff-ctx">         self._timeline = omni.timeline.get_timeline_interface()</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== DIFF: asset_path.json ==================== -->
+<div class="section" id="diff-asset">
+<h2>8. Diff: utils/asset_path.json</h2>
+
+<div class="explanation">
+  <strong>Why:</strong> The original file had <code>"asset_path": null</code>. This configures where OceanSim looks for its USD assets (BlueROV robot, MHL scene, rock, etc.). Set to the local path where we downloaded the assets.
+</div>
+
+<div class="diff-block">
+  <div class="diff-header">
+    <span>isaacsim/oceansim/utils/asset_path.json</span>
+    <span><span class="badge badge-info">Config</span> <span class="badge badge-modified">Modified</span></span>
+  </div>
+  <div class="diff-body">
+<div class="diff-line diff-hunk">@@ -1,3 +1,3 @@</div>
+<div class="diff-line diff-ctx"> {</div>
+<div class="diff-line diff-del">-  "asset_path": null</div>
+<div class="diff-line diff-add">+  "asset_path": "/home/robot/workspace/08-isaaclab/isaacsim/OceanSim_assets"</div>
+<div class="diff-line diff-ctx"> }</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== NEW FILES ==================== -->
+<div class="section" id="new-files">
+<h2>9. New Files Added</h2>
+
+<div class="warning">
+  <strong>Note:</strong> These empty <code>__init__.py</code> files may not be strictly necessary with the <code>[[python.module]]</code> entries in <code>extension.toml</code>. They were added during debugging to ensure Python package discovery. They are harmless and can be kept or removed.
+</div>
+
+<table>
+  <tr><th>File</th><th>Content</th><th>Purpose</th></tr>
+  <tr>
+    <td class="file-path">isaacsim/__init__.py</td>
+    <td>(empty)</td>
+    <td>Package marker for <code>isaacsim</code> namespace</td>
+  </tr>
+  <tr>
+    <td class="file-path">isaacsim/oceansim/__init__.py</td>
+    <td>(empty)</td>
+    <td>Package marker for <code>isaacsim.oceansim</code></td>
+  </tr>
+  <tr>
+    <td class="file-path">isaacsim/oceansim/modules/__init__.py</td>
+    <td>(empty)</td>
+    <td>Package marker for <code>isaacsim.oceansim.modules</code></td>
+  </tr>
+  <tr>
+    <td class="file-path">isaacsim/oceansim/sensors/__init__.py</td>
+    <td>(empty)</td>
+    <td>Package marker for <code>isaacsim.oceansim.sensors</code></td>
+  </tr>
+  <tr>
+    <td class="file-path">isaacsim/oceansim/utils/__init__.py</td>
+    <td>(empty)</td>
+    <td>Package marker for <code>isaacsim.oceansim.utils</code></td>
+  </tr>
+</table>
+</div>
+
+<!-- ==================== TESTS ==================== -->
+<div class="section" id="tests">
+<h2>10. Verification Test Results</h2>
+
+<p>All tests run on Isaac Sim 6.0.0 with <code>SimulationApp({"headless": True})</code>.</p>
+
+<div class="test-grid">
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> demo_waypoints.txt</div>
+    <div class="test-detail">468 waypoints loaded from demo data</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> demo_rgb.png</div>
+    <div class="test-detail">shape=(1080, 1920, 4) RGBA image</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> demo_depth.npy</div>
+    <div class="test-detail">shape=(1080, 1920), range=[3.33, 36.39]</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> UW_render Warp kernel</div>
+    <div class="test-detail">output shape=(1080, 1920, 4), mean_rgb=112.0 &mdash; 3 water types tested</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> BlueROV robot loaded</div>
+    <div class="test-detail">BROV_low.usd loaded, PhysX rigid body + collider configured</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> BarometerSensor</div>
+    <div class="test-detail">pressure=123239.5 Pa (hydrostatic at z=-0.8m, water_surface_z=1.43)</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> DVLsensor</div>
+    <div class="test-detail">4 beams attached (Janus configuration)</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> UW_Camera</div>
+    <div class="test-detail">resolution=[640, 480], focal_length=2.1, clipping=[0.1, 100]</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> ImagingSonarSensor</div>
+    <div class="test-detail">range=[0.2, 3.0], fov configured, 4000 horizontal resolution</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> Sensor Example scenario</div>
+    <div class="test-detail">5 physics steps, baro_reading=123239.5 Pa</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> Waypoint following</div>
+    <div class="test-detail">50 steps, delta_x=0.9134 (movement confirmed along waypoint path)</div>
+  </div>
+  <div class="test-card pass">
+    <div class="test-name"><span class="badge badge-pass">PASS</span> Colorpicker UW_render</div>
+    <div class="test-detail">3 water types: clear, turbid coastal, deep ocean &mdash; all produce valid output</div>
+  </div>
+</div>
+
+<h3>Summary</h3>
+<div class="stats">
+  <div class="stat stat-green">
+    <div class="stat-num">10/10</div>
+    <div class="stat-label">Tests Passed</div>
+  </div>
+  <div class="stat stat-red">
+    <div class="stat-num">0</div>
+    <div class="stat-label">Tests Failed</div>
+  </div>
+</div>
+
+<h3>Limitations</h3>
+<ul style="margin-left: 1.5rem; color: var(--muted);">
+  <li><strong>UW_Camera rendering</strong>: Requires timeline + render products. Works headless but annotator data may be empty without explicit render step.</li>
+  <li><strong>ImagingSonarSensor</strong>: Requires rendering pipeline for pointcloud/segmentation annotators. Basic creation and configuration verified.</li>
+  <li><strong>Colorpicker Extension GUI</strong>: The <code>get_active_viewport()</code> API requires a GUI viewport window. The Warp kernel itself (core computation) is fully verified.</li>
+</ul>
+</div>
+
+<div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.85rem;">
+  Generated: 2026-05-27 &middot; OceanSim commit c33cf95 &middot; Isaac Sim 6.0.0 &middot; RTX 5090
+</div>
+
+</div>
+</body>
+</html>

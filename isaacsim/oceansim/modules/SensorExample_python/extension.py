@@ -18,9 +18,8 @@ import omni.physx as _physx
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from omni.isaac.ui.element_wrappers import ScrollingWindow
-from omni.isaac.ui.menu import MenuItemDescription, make_menu_item_description
-from omni.kit.menu.utils import add_menu_items, remove_menu_items
+from isaacsim.gui.components import ScrollingWindow
+from isaacsim.gui.menu import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.usd import StageEventType
 
 from .global_variables import EXTENSION_TITLE
@@ -72,8 +71,9 @@ class Extension(omni.ext.IExt):
                 name="Examples",
                 onclick_action=(ext_id, f"CreateUIExtension:{EXTENSION_TITLE}"),
                 sub_menu=[
-                    make_menu_item_description(
-                        ext_id, "Sensor Example", lambda a=weakref.proxy(self): a._menu_callback()
+                    MenuItemDescription(
+                        name="Sensor Example",
+                        onclick_fn=lambda a=weakref.proxy(self): a._menu_callback(),
                     )
                 ],
             )
@@ -86,7 +86,7 @@ class Extension(omni.ext.IExt):
 
         # Events
         self._usd_context = omni.usd.get_context()
-        self._physxIFace = _physx.acquire_physx_interface()
+        self._physxIFace = _physx.get_physx_interface()
         self._physx_subscription = None
         self._stage_event_sub = None
         self._timeline = omni.timeline.get_timeline_interface()

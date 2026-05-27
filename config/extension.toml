@@ -18,9 +18,22 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.uiapp" = {}
-"omni.isaac.ui" = {}
-"omni.isaac.core" = {}
+"isaacsim.gui.components" = {}
+"isaacsim.core.api" = {}
+"isaacsim.examples.extension" = {}
 
+
+[[python.module]]
+name = "isaacsim.oceansim"
+
+[[python.module]]
+name = "isaacsim.oceansim.sensors"
+
+[[python.module]]
+name = "isaacsim.oceansim.utils"
+
+[[python.module]]
+name = "isaacsim.oceansim.modules"
 
 [[python.module]]
 name = "isaacsim.oceansim.modules.SensorExample_python"
