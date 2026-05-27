@@ -13,13 +13,16 @@ import carb
 # Custom import
 from isaacsim.oceansim.utils.UWrenderer_utils import UW_render
 
-# ROS2 import
-# Before OceanSim extension being activated, the extension isaacsim.ros2.bridge should be activated,
-# otherwise rclpy will fail to be loaded.
-import rclpy
-from sensor_msgs.msg import CompressedImage
-import time
-import cv2
+# ROS2 import (optional - requires isaacsim.ros2.bridge extension)
+ROS2_AVAILABLE = False
+try:
+    import rclpy
+    from sensor_msgs.msg import CompressedImage
+    import time
+    import cv2
+    ROS2_AVAILABLE = True
+except ImportError:
+    pass
 
 
 class UW_Camera(Camera):
@@ -142,10 +145,9 @@ class UW_Camera(Camera):
 
     def _setup_ros2_publisher(self):
         """Setup the ROS2 publisher for underwater images."""
+        if not self._enable_ros2_pub or not ROS2_AVAILABLE:
+            return
         try:
-            if not self._enable_ros2_pub:
-                return
-
             if not rclpy.ok():
                 rclpy.init()
                 print(f'[{self._name}] ROS2 context initialized')
