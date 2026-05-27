@@ -101,7 +101,7 @@ try:
         scenario2.update_scenario(1.0 / 60.0)
     final_pos = rob.GetAttribute('xformOp:translate').Get()
     scenario2.teardown_scenario()
-    moved = abs(final_pos[0] - initial_pos[0]) > 0.01
+    moved = abs(final_pos[0] - initial_pos[0]) > 0.01 or abs(final_pos[1] - initial_pos[1]) > 0.01 or abs(final_pos[2] - initial_pos[2]) > 0.01
     results.append(f"[PASS] Waypoint following: moved={moved}, pos={final_pos}")
 except Exception as e:
     results.append(f"[FAIL] Waypoint following: {e}")

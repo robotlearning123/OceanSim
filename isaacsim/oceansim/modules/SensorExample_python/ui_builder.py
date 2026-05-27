@@ -93,7 +93,7 @@ class UIBuilder():
         """
         Called when the stage is closed or the extension is hot reloaded.
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from omni.isaac.ui.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components implement a cleanup function that should be called
         """
         self._DVL_event_sub = None
         self._baro_event_sub = None

@@ -2,7 +2,7 @@
 
 Date: 2026-05-27
 Isaac Sim: 6.0.0
-OceanSim: commit `14d8f06` (from `umfieldrobotics/OceanSim`)
+OceanSim: commit `c33cf95` (from `umfieldrobotics/OceanSim`, branch `feat/isaacsim6-compat`)
 Platform: Ubuntu 24.04, RTX 5090, CUDA 12.9, Driver 580.95.05
 
 ## Summary
@@ -11,18 +11,18 @@ All OceanSim demos, sensors, and scenarios verified working on Isaac Sim 6.0.
 
 | Phase | Component | Status |
 |-------|-----------|--------|
-| 1 | Demo data files (waypoints, RGB, depth) | PASS |
-| 2 | Color Picker UW_render Warp kernel | PASS |
-| 3 | All 4 sensors (Barometer, DVL, Camera, Sonar) | PASS |
-| 4 | Sensor Example scenario loop | PASS |
-| 5 | Waypoint following scenario | PASS |
-| 6 | Colorpicker scenario (3 water types) | PASS |
+| 1 | Demo data files (waypoints, RGB, depth) | PASS (3 tests) |
+| 2 | Color Picker UW_render Warp kernel | PASS (1 test) |
+| 3 | All 4 sensors (Barometer, DVL, Camera, Sonar) | PASS (4 tests) |
+| 4 | Sensor Example scenario loop | PASS (1 test) |
+| 5 | Waypoint following scenario | PASS (1 test) |
+| 6 | Colorpicker scenario (3 water types) | PASS (2 tests) |
 
-**Total: 10/10 tests passed.**
+**Total: 12/12 tests passed.**
 
 ## Isaac Sim 6 API Compatibility Fixes
 
-Three breaking API changes were fixed:
+Six breaking API changes were fixed:
 
 ### 1. Extension module registration (`extension.toml`)
 
@@ -43,7 +43,23 @@ name = "isaacsim.oceansim.utils"
 name = "isaacsim.oceansim.modules"
 ```
 
-### 2. Semantics API rename (`ui_builder.py`)
+### 2. Extension dependency names (`extension.toml`)
+
+**Problem**: Old `omni.isaac.*` dependency names removed in Isaac Sim 6.
+
+**Fix**: Updated dependencies:
+```toml
+# Before:
+"omni.isaac.ui" = {}
+"omni.isaac.core" = {}
+
+# After:
+"isaacsim.gui.components" = {}
+"isaacsim.core.api" = {}
+"isaacsim.examples.extension" = {}
+```
+
+### 3. Semantics API rename (`ui_builder.py`)
 
 **Problem**: `add_update_semantics()` removed in Isaac Sim 6.
 
@@ -56,7 +72,7 @@ add_update_semantics(prim=..., semantic_label='1.0', type_label='reflectivity')
 add_labels(prim=..., labels=['1.0'], instance_name='reflectivity')
 ```
 
-### 3. PhysX interface acquisition (2 extension files)
+### 4. PhysX interface acquisition (2 extension files)
 
 **Problem**: `acquire_physx_interface()` removed in Isaac Sim 6.
 
@@ -70,6 +86,35 @@ self._physxIFace = _physx.acquire_physx_interface()
 
 # After:
 self._physxIFace = _physx.get_physx_interface()
+```
+
+### 5. UI imports migration (2 extension files)
+
+**Problem**: `omni.isaac.ui` module removed in Isaac Sim 6.
+
+**Fix**: Updated imports in both extension files:
+```python
+# Before:
+from omni.isaac.ui.element_wrappers import ScrollingWindow
+from omni.isaac.ui.menu import MenuItemDescription, make_menu_item_description
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
+
+# After:
+from isaacsim.gui.components import ScrollingWindow
+from isaacsim.gui.menu import MenuItemDescription, add_menu_items, remove_menu_items
+```
+
+### 6. Menu item factory replacement (2 extension files)
+
+**Problem**: `make_menu_item_description()` removed in Isaac Sim 6.
+
+**Fix**: Use `MenuItemDescription()` directly:
+```python
+# Before:
+make_menu_item_description(ext_id, "Sensor Example", lambda a=...: a._menu_callback())
+
+# After:
+MenuItemDescription(name="Sensor Example", onclick_fn=lambda a=...: a._menu_callback())
 ```
 
 ## Test Details
@@ -112,7 +157,7 @@ self._physxIFace = _physx.get_physx_interface()
 
 | File | Change |
 |------|--------|
-| `config/extension.toml` | Added 4 `[[python.module]]` entries |
+| `config/extension.toml` | Added 4 `[[python.module]]` entries, updated 3 dependency names |
+| `modules/SensorExample_python/extension.py` | UI imports → `isaacsim.gui`, `acquire_physx_interface` → `get_physx_interface`, `make_menu_item_description` → `MenuItemDescription` |
 | `modules/SensorExample_python/ui_builder.py` | `add_update_semantics` → `add_labels` |
-| `modules/SensorExample_python/extension.py` | `acquire_physx_interface` → `get_physx_interface` |
-| `modules/colorpicker_python/extension.py` | `acquire_physx_interface` → `get_physx_interface` |
+| `modules/colorpicker_python/extension.py` | UI imports → `isaacsim.gui`, `acquire_physx_interface` → `get_physx_interface`, `make_menu_item_description` → `MenuItemDescription` |

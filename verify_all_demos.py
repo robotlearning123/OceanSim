@@ -167,7 +167,7 @@ try:
                     translation=np.array([0.3, 0.0, 0.1]))
     cam.set_focal_length(2.1)
     cam.set_clipping_range(0.1, 100)
-    log("UW_Camera", True, f"resolution={cam.get_resolution()}")
+    log("UW_Camera", cam.get_resolution() == [640, 480], f"resolution={cam.get_resolution()}")
 except Exception as e:
     log("UW_Camera", False, str(e))
 
@@ -182,7 +182,7 @@ try:
         angular_res=0.25,
         hori_res=4000
     )
-    log("ImagingSonarSensor", True,
+    log("ImagingSonarSensor", sonar.get_range() is not None and sonar.get_fov() is not None,
         f"range={sonar.get_range()}, fov={sonar.get_fov()}")
 except Exception as e:
     log("ImagingSonarSensor", False, str(e))
