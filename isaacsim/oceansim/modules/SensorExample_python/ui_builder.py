@@ -174,7 +174,7 @@ class UIBuilder():
                 self._ctrl_mode_model = dropdown_builder(
                     label='Control Mode',
                     default_val=3,
-                    items=['No control', 'Straight line', 'Waypoints', 'Manual control'],
+                    items=['No control', 'Straight line', 'Waypoints', 'Manual control', 'ROS control'],
                     tooltip='Select preferred control mode',
                     on_clicked_fn=self._on_ctrl_mode_dropdown_clicked
                 )
@@ -210,6 +210,8 @@ class UIBuilder():
         self.frames.append(self.sensor_reading_frame)
         self.waypoints_frame = CollapsableFrame('Waypoints',collapsed=False, visible=False)
         self.frames.append(self.waypoints_frame)
+        self.ros2_control_frame = CollapsableFrame('ROS2 Control Mode Setting', collapsed=False, visible=False)
+        self.frames.append(self.ros2_control_frame)
 
 
 
@@ -445,7 +447,24 @@ class UIBuilder():
         self._ctrl_mode = model
         print(f'Ctrl mode: {model}. Reload the scene for changes to take effect.')
 
-   
+    def _build_ros2_control_ui(self):
+        """Build the ROS2 control UI elements."""
+        with self.ros2_control_frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+                self._ros2_control_mode_model = dropdown_builder(
+                    label='ROS2 Control Mode',
+                    default_val=0,
+                    items=['velocity control', 'force control'],
+                    tooltip='Select preferred ROS2 control mode',
+                    on_clicked_fn=self._on_ros2_control_mode_dropdown_clicked
+                )
+
+    def _on_ros2_control_mode_dropdown_clicked(self, mode):
+        self._scenario._ros2_control_mode = mode
+        if self._scenario._ros2_control_receiver is not None:
+            self._scenario._ros2_control_receiver._setup_ros2_control_mode(mode)
+        print(f'ROS control mode switched to: {mode}.')
+
     def _add_extra_ui(self):
         with self.sensor_reading_frame:
             with ui.VStack(spacing=5, height=0):                
@@ -463,6 +482,12 @@ class UIBuilder():
                 self.waypoints_frame.visible = True
             else:
                 self.waypoints_frame.visible = False
+        with self.ros2_control_frame:
+            if self._ctrl_mode == 'ROS control':
+                self._build_ros2_control_ui()
+                self.ros2_control_frame.visible = True
+            else:
+                self.ros2_control_frame.visible = False
 
 
     def _build_waypoints_filepicker(self):

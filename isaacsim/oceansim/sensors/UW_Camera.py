@@ -13,6 +13,14 @@ import carb
 # Custom import
 from isaacsim.oceansim.utils.UWrenderer_utils import UW_render
 
+# ROS2 import
+# Before OceanSim extension being activated, the extension isaacsim.ros2.bridge should be activated,
+# otherwise rclpy will fail to be loaded.
+import rclpy
+from sensor_msgs.msg import CompressedImage
+import time
+import cv2
+
 
 class UW_Camera(Camera):
 
@@ -59,15 +67,16 @@ class UW_Camera(Camera):
 
         super().__init__(prim_path, name, frequency, dt, resolution, position, orientation, translation, render_product_path)
 
-    def initialize(self, 
+    def initialize(self,
                    UW_param: np.ndarray = np.array([0.0, 0.31, 0.24, 0.05, 0.05, 0.2, 0.05, 0.05, 0.05 ]),
                    viewport: bool = True,
                    writing_dir: str = None,
                    UW_yaml_path: str = None,
-                   physics_sim_view=None):
-        
+                   physics_sim_view=None,
+                   enable_ros2_pub=True, uw_img_topic="/oceansim/robot/uw_img", ros2_pub_frequency=5, ros2_pub_jpeg_quality=50):
+
         """Configure underwater rendering properties and initialize pipelines.
-    
+
         Args:
             UW_param (np.ndarray, optional): Underwater parameters array:
                 [0:3] - Backscatter value (RGB)
@@ -77,8 +86,12 @@ class UW_Camera(Camera):
             viewport (bool, optional): Enable viewport visualization. Defaults to True.
             writing_dir (str, optional): Directory to save rendered images. Defaults to None.
             UW_yaml_path (str, optional): Path to YAML file with water properties. Defaults to None.
-            physics_sim_view (_type_, optional): _description_. Defaults to None.            
-    
+            physics_sim_view (_type_, optional): _description_. Defaults to None.
+            enable_ros2_pub (bool, optional): Enable ROS2 image publishing. Defaults to True.
+            uw_img_topic (str, optional): ROS2 topic name for UW image. Defaults to "/oceansim/robot/uw_img".
+            ros2_pub_frequency (int, optional): ROS2 publish frequency in Hz. Defaults to 5.
+            ros2_pub_jpeg_quality (int, optional): ROS2 publish JPEG quality (0-100). Defaults to 50.
+
         """
         self._id = 0
         self._viewport = viewport
@@ -116,9 +129,71 @@ class UW_Camera(Camera):
         if writing_dir is not None:
             self._writing = True
             self._writing_backend = rep.BackendDispatch({"paths": {"out_dir": writing_dir}})
-        
+
+        # ROS2 configuration
+        self._enable_ros2_pub = enable_ros2_pub
+        self._uw_img_topic = uw_img_topic
+        self._last_publish_time = 0.0
+        self._ros2_pub_frequency = ros2_pub_frequency
+        self._ros2_pub_jpeg_quality = ros2_pub_jpeg_quality
+        self._setup_ros2_publisher()
+
         print(f'[{self._name}] Initialized successfully. Data writing: {self._writing}')
-    
+
+    def _setup_ros2_publisher(self):
+        """Setup the ROS2 publisher for underwater images."""
+        try:
+            if not self._enable_ros2_pub:
+                return
+
+            if not rclpy.ok():
+                rclpy.init()
+                print(f'[{self._name}] ROS2 context initialized')
+
+            node_name = f'oceansim_rob_uw_img_pub_{self._name.lower()}'.replace(' ', '_')
+            self._ros2_uw_img_node = rclpy.create_node(node_name)
+            self._uw_img_pub = self._ros2_uw_img_node.create_publisher(
+                CompressedImage,
+                self._uw_img_topic,
+                10
+            )
+
+        except Exception as e:
+            print(f'[{self._name}] ROS2 uw image publisher setup failed: {e}')
+
+    def _ros2_publish_uw_img(self, uw_img):
+        """Publish the underwater image via ROS2."""
+        try:
+            if self._uw_img_pub is None:
+                return
+
+            current_time = time.time()
+            if current_time - self._last_publish_time < (1.0 / self._ros2_pub_frequency):
+                return
+
+            uw_image_cpu = uw_img.numpy()
+            if uw_image_cpu.dtype != np.uint8:
+                uw_image_cpu = uw_image_cpu.astype(np.uint8)
+            uw_image_bgr = cv2.cvtColor(uw_image_cpu, cv2.COLOR_RGBA2BGR)
+            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), self._ros2_pub_jpeg_quality]
+            result, compressed_img = cv2.imencode('.jpg', uw_image_bgr, encode_param)
+            if not result:
+                print(f'[{self._name}] Failed to compress image to JPEG')
+                return
+
+            msg = CompressedImage()
+            msg.header.stamp = self._ros2_uw_img_node.get_clock().now().to_msg()
+            msg.header.frame_id = 'uw_image'
+            msg.format = 'jpeg'
+            msg.data = compressed_img.tobytes()
+
+            self._uw_img_pub.publish(msg)
+            rclpy.spin_once(self._ros2_uw_img_node, timeout_sec=0.0)
+            self._last_publish_time = current_time
+
+        except Exception as e:
+            print(f'[{self._name}] ROS2 uw image publish failed: {e}')
+
     def render(self):
         """Process and display a single frame with underwater effects.
     
@@ -150,6 +225,8 @@ class UW_Camera(Camera):
             if self._writing:
                 self._writing_backend.schedule(write_image, path=f'UW_image_{self._id}.png', data=uw_image)
                 print(f'[{self._name}] [{self._id}] Rendered image saved to {self._writing_backend.output_dir}')
+            if self._enable_ros2_pub:
+                self._ros2_publish_uw_img(uw_image)
 
             self._id += 1
 
@@ -180,7 +257,7 @@ class UW_Camera(Camera):
     # Detach the annotator from render product and clear the data cache
     def close(self):
         """Clean up resources by detaching annotators and clearing caches.
-    
+
         Note:
             - Required for proper shutdown when done using the sensor
             - Also closes viewport window if one was created
@@ -193,7 +270,10 @@ class UW_Camera(Camera):
 
         if self._viewport:
             self.ui_destroy()
-            
+
+        if self._enable_ros2_pub and hasattr(self, '_ros2_uw_img_node') and self._ros2_uw_img_node:
+            self._ros2_uw_img_node.destroy_node()
+
         print(f'[{self._name}] Annotator detached. AnnotatorCache cleaned.')
     
     
