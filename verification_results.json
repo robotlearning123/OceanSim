@@ -1,0 +1,59 @@
+{
+  "total": 13,
+  "passed": 13,
+  "failed": 0,
+  "results": {
+    "demo_waypoints.txt": {
+      "status": true,
+      "detail": "468 waypoints loaded"
+    },
+    "demo_rgb.png": {
+      "status": true,
+      "detail": "shape=(1080, 1920, 4)"
+    },
+    "demo_depth.npy": {
+      "status": true,
+      "detail": "shape=(1080, 1920), range=[3.33, 36.39]"
+    },
+    "UW_render kernel": {
+      "status": true,
+      "detail": "output shape=(1080, 1920, 4), mean_rgb=112.0"
+    },
+    "OceanSim assets": {
+      "status": true,
+      "detail": "/home/robot/workspace/08-isaaclab/isaacsim/OceanSim_assets"
+    },
+    "BlueROV robot loaded": {
+      "status": true,
+      "detail": "/home/robot/workspace/08-isaaclab/isaacsim/OceanSim_assets/Bluerov/BROV_low.usd"
+    },
+    "BarometerSensor": {
+      "status": true,
+      "detail": "pressure=123239.5 Pa"
+    },
+    "DVLsensor": {
+      "status": true,
+      "detail": "beams=4, paths=/World/rob/DVL/beam_0"
+    },
+    "UW_Camera": {
+      "status": true,
+      "detail": "resolution=[640, 480]"
+    },
+    "ImagingSonarSensor": {
+      "status": true,
+      "detail": "range=[0.2, 3.0], fov=[130.0, 20.0]"
+    },
+    "Sensor Example scenario": {
+      "status": true,
+      "detail": "baro_reading=123239.5 Pa after 5 steps"
+    },
+    "Waypoint following": {
+      "status": true,
+      "detail": "initial=(-2, 0, -0.800000011920929), final=(-1.0866330862045288, 0.08414578437805176, -0.8000000715255737)"
+    },
+    "Colorpicker UW_render": {
+      "status": true,
+      "detail": "tested 3 water types"
+    }
+  }
+}
